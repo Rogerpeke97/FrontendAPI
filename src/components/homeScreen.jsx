@@ -28,9 +28,27 @@ let style = {
     canvas: {
         display: 'grid',
         position: 'absolute',
-        minHeight: '100%',
+        minHeight: '250vh',
         minWidth: '100%',
-        maxWidth: '100%'
+        maxWidth: '100%',
+        maxHeight: "250vh"
+    },
+    explanationBox:{
+        backgroundColor:"rgb(80, 100, 40)",
+        width: "70%",
+        height: "100vh",
+        left: "15%",
+        position: "relative",
+        boxShadow: "0 10px 20px gray, 0 6px 6px gray"
+    },
+    footer:{
+        backgroundColor: "rgb(32, 30, 29)",
+        color: 'white',
+        display: 'flex',
+        height: '10rem',
+        position: "relative",
+        width: "100%",
+        top:"250vh"
     }
 }
 
@@ -57,12 +75,13 @@ const canvas = useRef(0);
             .set(0, 0, 3);
         scene.add(light);
         window.addEventListener('resize', ()=>{
+            if(canvas.current !== null){
             width = canvas.current.clientWidth
             height = canvas.current.clientHeight
-            console.log("its firing")
             renderer.setSize(width, height);
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
+            }
         });
 
 
@@ -110,19 +129,6 @@ const canvas = useRef(0);
         scene.add(particleSys)
 
 
-
-
-
-
-
-
-
-
-
-        
-  
-
-
         renderer.setSize(width, height)
         canvas.current.appendChild(renderer.domElement)
         scene.background = new THREE.Color('black')
@@ -139,15 +145,21 @@ const canvas = useRef(0);
 
     return(
     <div>
-        <div ref={canvas} style={style.canvas}></div>
+       <div ref={canvas} style={style.canvas}></div>
        <div style={style.container}>
            <div className="title" style={style.title}>
-               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'} onAnimationEnd={(t)=> t.currentTarget.style.animation = 'none'} >G</span>
-               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'} onAnimationEnd={(t)=> t.currentTarget.style.animation = 'none'} >a</span>
-               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'} onAnimationEnd={(t)=> t.currentTarget.style.animation = 'none'} >m</span>
-               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'} onAnimationEnd={(t)=> t.currentTarget.style.animation = 'none'} >e</span>
+               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> {t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'; t.currentTarget.style.color = "rgb(29, 146, 226)"}} onAnimationEnd={(t)=> {t.currentTarget.style.animation = 'none';  t.currentTarget.style.color = "white"}}>G</span>
+               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> {t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'; t.currentTarget.style.color = "rgb(125, 140, 40)"}} onAnimationEnd={(t)=> {t.currentTarget.style.animation = 'none';  t.currentTarget.style.color = "white"}}>a</span>
+               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> {t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'; t.currentTarget.style.color = "rgb(70, 75, 68)"}} onAnimationEnd={(t)=> {t.currentTarget.style.animation = 'none';  t.currentTarget.style.color = "white"}}>m</span>
+               <span style={{transition: 'all 1s ease-out'}} onMouseEnter={(t)=> {t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out'; t.currentTarget.style.color = "rgb(29, 146, 226)"}} onAnimationEnd={(t)=> {t.currentTarget.style.animation = 'none';  t.currentTarget.style.color = "white"}}>e</span>
            </div>
            <div style={style.howToPlay}>How to play:</div>
+           <div style={style.explanationBox}>
+               <div>HERE GOES GRAPHIC STUFF DISPLAYING INSTRUCTIONS</div>
+           </div>
+       </div>
+       <div style={style.footer}>
+           <div></div>
        </div>
     </div>
     );

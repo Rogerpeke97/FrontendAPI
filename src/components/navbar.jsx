@@ -1,11 +1,14 @@
 /* eslint-disable no-use-before-define */
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import {
+    Link
+  } from "react-router-dom";
 
 let style = {
     navbar: {
-        backgroundColor: 'black',
+        backgroundColor: "rgb(32, 30, 29)",
         color: 'white',
         display: 'flex',
         height: '6.5rem'
@@ -37,7 +40,30 @@ let style = {
         flex: '1', cursor: 'pointer', transition: "0.5s ease-in-out",
         color: "gray",
         textShadow: "0 0 0 transparent, 0 0 0 transparent",
-        overflow: "visible"
+        overflow: "visible",
+        textDecoration: 'none'
+    },
+    hoverLogin:{
+        visibility: "visible",
+        backgroundColor: "rgb(70, 75, 68)",
+        position: "absolute",
+        color: "white", 
+        top: "100%",
+        width: "150%",
+        right: "0%",
+        transition: "all 0.5s ease-out",
+        zIndex: "2",
+        border: "1px solid white"
+    },
+    dropdown:{
+        display: "flex",
+        height: "50px",
+        alignItems: 'center',
+        cursor: "pointer",
+        border: "0.8px solid white",
+        transition: "all 0.5s ease-out",
+        color: "white",
+        textDecoration: "none"
     }
 }
 
@@ -48,7 +74,7 @@ const Navbar = ()=>{
         if(scene === "Scene not set"){
 
     let manager = new THREE.LoadingManager();
-    manager.onProgress = function ( item, loaded, total ) {
+    manager.onProgress = ( item, loaded, total )=>{
 
         console.log( item, loaded, total );
 
@@ -92,17 +118,19 @@ const Navbar = ()=>{
             .position
             .set(0, 0, 3);
         scene.add(light);
+        scene.background = new THREE.Color(0x201E1D);
+  
         window.addEventListener('resize', ()=>{
+            if(canvas.current !== null){
             width = canvas.current.clientWidth
             height = canvas.current.clientHeight
-            console.log("its firing")
             renderer.setSize(width, height);
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
+        }
         });
         renderer.setSize(width, height)
         canvas.current.appendChild(renderer.domElement)
-        scene.background = new THREE.Color('black')
 
         const animate = ()=>{
             renderer.render(scene, camera)
@@ -115,8 +143,30 @@ const Navbar = ()=>{
 
     const homeButton = useRef(0);
     const loginButton = useRef(0);
-
-
+    const [hoverLogin, setHoverLogin] = useState(0)
+    let logged = ()=>{
+        return(
+            <div style={{display: "flex"}}>
+            <i class="fi-xnsuxl-user-solid" style={{display: "grid", alignItems:"center"}}></i>
+            <div style={{paddingLeft: "2%"}}>{localStorage.getItem('loginUser')}</div>
+            </div>
+        )
+    }
+    let notLogged = ()=>{
+        return(
+            <div>
+            <i class="fi-xwsuxl-sign-in-solid"></i>
+            <div style={{paddingLeft: "2%"}}>LOGIN</div>
+            </div>
+        )
+    }
+    const logOut = async ()=>{
+         localStorage.clear()
+        .then(()=>{
+            window.location.reload();
+        })
+        
+    }
 
     return(
         <div style={style.navbar}>
@@ -136,19 +186,40 @@ const Navbar = ()=>{
             </div>
             <div style={style.canvas} ref={canvas}></div>
             <div style={style.grid1}>
-                <div style={{display: "grid", alignItems: 'center', justifyContent: 'center'}}>
-                    <div
+                <div style={{display: "grid", alignItems: 'center', justifyContent: 'center', position: "relative"}}>
+                <Link
+                    to={localStorage.getItem('loginUser') ? "/" : "/login"}
                      style={style.loginButton}
                      ref={loginButton}
                      onMouseEnter={()=>{
                         loginButton.current.style.textShadow = "0 0 10px white, 0 0 50px white"
                         loginButton.current.style.color = "white";
+                        setHoverLogin(1);
                     }}
                     onMouseLeave={()=>{
                         loginButton.current.style.color = "gray";
-                        loginButton.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent"                    
+                        loginButton.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent"     
+                        setHoverLogin(0);               
                     }}
-                    >LOGIN</div>
+                    >{localStorage.getItem('loginUser') ? logged() : notLogged() }</Link>
+                 <div style={hoverLogin === 1 ? style.hoverLogin : {display: "none", visibility: "hidden"}}
+                  onMouseEnter={()=>setHoverLogin(1)} onMouseLeave={()=>setHoverLogin(0)}>
+                  <Link to={localStorage.getItem('loginUser') ? `/${localStorage.getItem('loginUser')}` : "/login"} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
+                  onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
+                  <i class="fi-hnsuxl-robot" style={{color: "rgb(29, 146, 226)"}}></i>
+                  <div style={{paddingLeft: "2%"}}>Account</div>
+                  </Link>
+                  <Link to={localStorage.getItem('loginUser') ? "/leaderboard" : "/login"} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
+                  onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
+                  <i class="fi-xnsuxl-cup-solid" style={{color: "rgb(125, 140, 40)"}}></i>
+                  <div style={{paddingLeft: "2%"}}>Leaderboard</div>
+                  </Link>
+                  <div onClick={logOut} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
+                  onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
+                  <i class="fi-cnsuxl-sign-out"></i>   
+                  <div style={{paddingLeft: "2%"}}>Log out</div>
+                  </div>        
+                 </div>
                 </div>
             </div>
         </div>

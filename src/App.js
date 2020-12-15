@@ -1,14 +1,38 @@
 import './App.css';
 import HomeScreen from './components/homeScreen';
-import './components/navbar'
 import Navbar from './components/navbar';
+import Login from './components/login';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  BrowserRouter
+} from "react-router-dom";
+import { PageContext } from './pageContext'
+import { useState } from 'react';
 
 function App() {
+
+const [value, setValue] = useState("HomePage")
+  
   return (
-    <div className="App">
-    <Navbar />
-    <HomeScreen />
+    <BrowserRouter>
+    <Switch>
+    <PageContext.Provider value={{value, setValue}}>  
+    <Route exact path="/" render = {props =>
+      <div className="App">
+      <Navbar/>
+      <HomeScreen/>
+      </div>
+    }></Route>
+    <Route exact path="/login" render= {props =>
+    <div>
+      <Login/>
     </div>
+    }></Route>
+    </PageContext.Provider>
+    </Switch>
+    </BrowserRouter>
   );
 }
 

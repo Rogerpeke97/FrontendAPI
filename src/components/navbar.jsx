@@ -5,7 +5,9 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {
     Link
   } from "react-router-dom";
+  import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
+  import { faChild, faDiagnoses, faTrophy, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 let style = {
     navbar: {
         backgroundColor: "rgb(32, 30, 29)",
@@ -147,7 +149,9 @@ const Navbar = ()=>{
     let logged = ()=>{
         return(
             <div style={{display: "flex"}}>
-            <i class="fi-xnsuxl-user-solid" style={{display: "grid", alignItems:"center"}}></i>
+            <div style={{display: "grid", alignItems:"center"}} >
+            <FontAwesomeIcon icon={faChild} />
+            </div>
             <div style={{paddingLeft: "2%"}}>{localStorage.getItem('loginUser')}</div>
             </div>
         )
@@ -155,7 +159,9 @@ const Navbar = ()=>{
     let notLogged = ()=>{
         return(
             <div>
-            <i class="fi-xwsuxl-sign-in-solid"></i>
+            <div style={{display: "grid", alignItems:"center"}} >
+            <FontAwesomeIcon icon={faChild} />
+            </div>            
             <div style={{paddingLeft: "2%"}}>LOGIN</div>
             </div>
         )
@@ -206,17 +212,17 @@ const Navbar = ()=>{
                   onMouseEnter={()=>setHoverLogin(1)} onMouseLeave={()=>setHoverLogin(0)}>
                   <Link to={localStorage.getItem('loginUser') ? `/${localStorage.getItem('loginUser')}` : "/login"} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
                   onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
-                  <i class="fi-hnsuxl-robot" style={{color: "rgb(29, 146, 226)"}}></i>
+                <FontAwesomeIcon style={{color: "rgb(29, 146, 226)"}} icon={faDiagnoses} />
                   <div style={{paddingLeft: "2%"}}>Account</div>
                   </Link>
                   <Link to={localStorage.getItem('loginUser') ? "/leaderboard" : "/login"} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
                   onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
-                  <i class="fi-xnsuxl-cup-solid" style={{color: "rgb(125, 140, 40)"}}></i>
+                 <FontAwesomeIcon style={{color: "rgb(125, 140, 40)"}} icon={faTrophy} />
                   <div style={{paddingLeft: "2%"}}>Leaderboard</div>
                   </Link>
                   <div onClick={logOut} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
                   onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
-                  <i class="fi-cnsuxl-sign-out"></i>   
+                  <FontAwesomeIcon style={{color: "rgb(125, 140, 40)"}} icon={faSignOutAlt} />
                   <div style={{paddingLeft: "2%"}}>Log out</div>
                   </div>        
                  </div>

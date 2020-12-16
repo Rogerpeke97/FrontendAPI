@@ -1,8 +1,10 @@
 import {useRef, useState, useEffect} from 'react'
 import '../App.css';
 import * as THREE from "three";
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
+import {
+    Link
+  } from "react-router-dom";
 let style = {
     container: {
         backgroundColor: 'transparent',
@@ -49,6 +51,17 @@ let style = {
         position: "relative",
         width: "100%",
         top:"250vh"
+    },
+    playButton:{
+        textDecoration: "none",
+        color: "white",
+        backgroundColor: "red", 
+        width: "20%",
+        height: "10%",
+        position: "relative", 
+        top: "80%",
+        display:"flex",
+        left:"40%"
     }
 }
 
@@ -156,6 +169,9 @@ const canvas = useRef(0);
            <div style={style.howToPlay}>How to play:</div>
            <div style={style.explanationBox}>
                <div>HERE GOES GRAPHIC STUFF DISPLAYING INSTRUCTIONS</div>
+               <div style={style.playButton}>
+                   <Link to= "/game" style={{textDecoration: "none", display: "grid", color: "white", width: "100%", heigth: "100%", justifyContent: "center", alignItems: "center"}}>Play</Link>
+               </div>
            </div>
        </div>
        <div style={style.footer}>

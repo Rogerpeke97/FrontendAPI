@@ -2,6 +2,8 @@ import './App.css';
 import HomeScreen from './components/homeScreen';
 import Navbar from './components/navbar';
 import Login from './components/login';
+import Game from './components/game'
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -28,6 +30,12 @@ const [value, setValue] = useState("HomePage")
     <Route exact path="/login" render= {props =>
     <div>
       <Login/>
+    </div>
+    }></Route>
+     <Route exact path="/game" render= {props =>
+    <div className="App">
+      <Navbar/>
+      <Game/>
     </div>
     }></Route>
     </PageContext.Provider>

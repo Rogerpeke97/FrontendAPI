@@ -109,7 +109,7 @@ const Navbar = ()=>{
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
         const camera = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
-        const renderer = new THREE.WebGLRenderer({antialias: true});
+        const renderer = new THREE.WebGLRenderer();
         camera
             .position
             .set(0, 0, 4);

@@ -10,7 +10,10 @@ import {
   import { faChild, faDiagnoses, faTrophy, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 let style = {
     navbar: {
-        backgroundColor: "rgb(32, 30, 29)",
+        backgroundColor: "olivedrab",
+        position: "fixed",
+        zIndex: "50",
+        width: "100%",
         color: 'white',
         display: 'flex',
         height: '6.5rem'
@@ -27,31 +30,38 @@ let style = {
         minWidth: "350px",
         maxHeight: "100%", 
         maxWidth: "100%",
-
     },
     grid2:{
         flex: '1'
     },
     homeButton:{
         flex: '1', cursor: 'pointer', transition: "0.5s ease-in-out",
-        color: "gray",
+        color: "white",
         textShadow: "0 0 0 transparent, 0 0 0 transparent",
-        overflow: "visible"
+        overflow: "visible",
+        fontSize: "1.3rem",
+        fontWeight:"bold",
+        margin: "0"
     },
     loginButton:{
         flex: '1', cursor: 'pointer', transition: "0.5s ease-in-out",
-        color: "gray",
+        color: "white",
         textShadow: "0 0 0 transparent, 0 0 0 transparent",
         overflow: "visible",
-        textDecoration: 'none'
+        fontSize: "1.3rem",
+        fontWeight:"bold",
+        textDecoration: "none",
+        margin: "0"
     },
     hoverLogin:{
         visibility: "visible",
-        backgroundColor: "rgb(70, 75, 68)",
+        backgroundColor: "lightblue",
         position: "absolute",
         color: "white", 
         top: "100%",
-        width: "150%",
+        minWidth: "200px",
+        maxWidth: "200px",
+        fontSize:"1rem",
         right: "0%",
         transition: "all 0.5s ease-out",
         zIndex: "2",
@@ -60,11 +70,12 @@ let style = {
     dropdown:{
         display: "flex",
         height: "50px",
+        fontWeight: "bold",
         alignItems: 'center',
         cursor: "pointer",
         border: "0.8px solid white",
         transition: "all 0.5s ease-out",
-        color: "white",
+        color: "black",
         textDecoration: "none"
     }
 }
@@ -120,7 +131,7 @@ const Navbar = ()=>{
             .position
             .set(0, 0, 3);
         scene.add(light);
-        scene.background = new THREE.Color(0x201E1D);
+        scene.background = new THREE.Color(0x6B8E23);
   
         window.addEventListener('resize', ()=>{
             if(canvas.current !== null){
@@ -143,7 +154,10 @@ const Navbar = ()=>{
     }
     }, [scene])
 
-    const homeButton = useRef(0);
+    const underlineHome = useRef(0);
+    const homeFont = useRef(0);
+    const underlineLogin = useRef(0);
+    const loginFont = useRef(0);
     const loginButton = useRef(0);
     const [hoverLogin, setHoverLogin] = useState(0)
     let logged = ()=>{
@@ -158,11 +172,15 @@ const Navbar = ()=>{
     }
     let notLogged = ()=>{
         return(
-            <div>
+            <div style={{display: "flex"}}>
             <div style={{display: "grid", alignItems:"center"}} >
             <FontAwesomeIcon icon={faChild} />
             </div>            
-            <div style={{paddingLeft: "2%"}}>LOGIN</div>
+            <div style={{paddingLeft: "2%"}} >
+            <h2 style={style.loginButton} ref={loginFont}>LOGIN</h2>
+                    <div style={{height: "2px", width: "100%", background:"white",
+                     transform: "scaleX(0)", transition: "all 0.3s ease-out"}} ref={underlineLogin}></div>
+            </div>
             </div>
         )
     }
@@ -178,16 +196,22 @@ const Navbar = ()=>{
         <div style={style.navbar}>
             <div style={style.grid1}>
                 <div style={{display: "grid", alignItems: 'center', justifyContent: 'center'}}>
-                <div style={style.homeButton} ref={homeButton}
+                <div style={style.homeButton}
                 onMouseEnter={()=>{
-                    homeButton.current.style.textShadow = "0 0 10px white, 0 0 50px white"
-                    homeButton.current.style.color = "white";
+                    homeFont.current.style.textShadow = "0 0 10px white, 0 0 50px white"
+                    homeFont.current.style.color = "white";
+                    underlineHome.current.style.transform = "scaleX(1)";
                 }}
                 onMouseLeave={()=>{
-                    homeButton.current.style.color = "gray";
-                    homeButton.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent"                    
+                    homeFont.current.style.color = "white";
+                    homeFont.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent";
+                    underlineHome.current.style.transform = "scaleX(0)";
                 }}
-                >HOME</div>
+                >
+                    <h2 style={style.homeButton} ref={homeFont}>HOME</h2>
+                    <div style={{height: "2px", width: "100%", background:"white",
+                     transform: "scaleX(0)", transition: "all 0.3s ease-out"}} ref={underlineHome}></div>
+                </div>
                 </div>
             </div>
             <div style={style.canvas} ref={canvas}></div>
@@ -198,30 +222,53 @@ const Navbar = ()=>{
                      style={style.loginButton}
                      ref={loginButton}
                      onMouseEnter={()=>{
-                        loginButton.current.style.textShadow = "0 0 10px white, 0 0 50px white"
-                        loginButton.current.style.color = "white";
+                        loginFont.current.style.textShadow = "0 0 10px white, 0 0 50px white"
+                        loginFont.current.style.color = "white";
+                        underlineLogin.current.style.transform = "scaleX(1)";
                         setHoverLogin(1);
                     }}
                     onMouseLeave={()=>{
-                        loginButton.current.style.color = "gray";
-                        loginButton.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent"     
+                        loginFont.current.style.color = "white";
+                        loginFont.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent";
+                        underlineLogin.current.style.transform = "scaleX(0)";   
                         setHoverLogin(0);               
                     }}
                     >{localStorage.getItem('loginUser') ? logged() : notLogged() }</Link>
                  <div style={hoverLogin === 1 ? style.hoverLogin : {display: "none", visibility: "hidden"}}
                   onMouseEnter={()=>setHoverLogin(1)} onMouseLeave={()=>setHoverLogin(0)}>
-                  <Link to={localStorage.getItem('loginUser') ? `/${localStorage.getItem('loginUser')}` : "/login"} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
-                  onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
+                  <Link to={localStorage.getItem('loginUser') ? `/${localStorage.getItem('loginUser')}` : "/login"}
+                   style={style.dropdown} onMouseEnter={(e)=>{
+                       e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
+                       e.currentTarget.style.color = "white";
+                    }}
+                  onMouseLeave={(e)=>{
+                  e.currentTarget.style.backgroundColor = "lightblue";
+                  e.currentTarget.style.color = "black";
+                  }}>
                 <FontAwesomeIcon style={{color: "rgb(29, 146, 226)"}} icon={faDiagnoses} />
                   <div style={{paddingLeft: "2%"}}>Account</div>
                   </Link>
-                  <Link to={localStorage.getItem('loginUser') ? "/leaderboard" : "/login"} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
-                  onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
+                  <Link to={localStorage.getItem('loginUser') ? "/leaderboard" : "/login"} style={style.dropdown}
+                   onMouseEnter={(e)=>{
+                       e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
+                       e.currentTarget.style.color = "white";
+                    }}
+                  onMouseLeave={(e)=>{ 
+                  e.currentTarget.style.backgroundColor = "lightblue";
+                  e.currentTarget.style.color = "black";
+                  }}>
                  <FontAwesomeIcon style={{color: "rgb(125, 140, 40)"}} icon={faTrophy} />
                   <div style={{paddingLeft: "2%"}}>Leaderboard</div>
                   </Link>
-                  <div onClick={logOut} style={style.dropdown} onMouseEnter={(e)=>e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)"}
-                  onMouseLeave={(e)=>e.currentTarget.style.backgroundColor = "rgb(70, 75, 68)"}>
+                  <div onClick={logOut} style={style.dropdown}
+                   onMouseEnter={(e)=>{
+                       e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
+                       e.currentTarget.style.color = "white";
+                    }}
+                  onMouseLeave={(e)=>{ 
+                  e.currentTarget.style.backgroundColor = "lightblue";
+                  e.currentTarget.style.color = "black";
+                  }}>
                   <FontAwesomeIcon style={{color: "rgb(125, 140, 40)"}} icon={faSignOutAlt} />
                   <div style={{paddingLeft: "2%"}}>Log out</div>
                   </div>        

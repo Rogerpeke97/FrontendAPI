@@ -1,15 +1,20 @@
 import {useRef, useState, useEffect} from 'react'
 import '../App.css';
 import * as THREE from "three";
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import TWEEN from '@tweenjs/tween.js'
 
 import {
     Link
   } from "react-router-dom";
+import { text } from '@fortawesome/fontawesome-svg-core';
 let style = {
     container: {
         backgroundColor: 'transparent',
         position: 'absolute',
-        minHeight: '90vh',
+        top: "6.5rem",
+        minHeight: '100vh',
+        maxHeight: '100vh',
         minWidth: '100%',
         maxWidth: '100%'
     },
@@ -29,13 +34,14 @@ let style = {
     },
     canvas: {
         display: 'grid',
-        position: 'absolute',
-        minHeight: '250vh',
+        position: 'fixed',
+        minHeight: '100vh',
         minWidth: '100%',
         maxWidth: '100%',
-        maxHeight: "250vh"
+        maxHeight: "100vh"
     },
     explanationBox:{
+        display: "none",
         backgroundColor:"rgb(80, 100, 40)",
         width: "70%",
         height: "100vh",
@@ -68,15 +74,16 @@ let style = {
 const HomeScreen = ()=>{
 const canvas = useRef(0);
     const [scene, setScene] = useState("Scene not set");
+    const [animationTransition, setAnimationTransition] = useState(0);
+    let obj = useRef(0);
     useEffect(()=>{
-        if(scene === "Scene not set"){
         let height = canvas.current.clientHeight
         let width = canvas.current.clientWidth
 
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
         const camera = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
-        const renderer = new THREE.WebGLRenderer({antialias: true});
+        const renderer = new THREE.WebGLRenderer();
         camera
             .position
             .set(0, 0, 4);
@@ -87,6 +94,7 @@ const canvas = useRef(0);
             .position
             .set(0, 0, 3);
         scene.add(light);
+        let clock = new THREE.Clock();
         window.addEventListener('resize', ()=>{
             if(canvas.current !== null){
             width = canvas.current.clientWidth
@@ -106,11 +114,11 @@ const canvas = useRef(0);
         let particles = new THREE.Geometry();
         let texture = new THREE
             .TextureLoader()
-            .load('snow.png');
+            .load('leaftexture.png');
         let pMaterial = new THREE.PointsMaterial({
-            color: 'white', size: 0.3, map: texture, alphaTest: 0.1, // removes black squares
-            blending: THREE.AdditiveBlending,
-            transparent: false
+            color: 'green', size: 0.3, map: texture, alphaTest: 0.1, // removes black squares
+            blending: THREE.NormalBlending,
+            transparent: true
         });
         for (let i = 0; i < particleCount; i++) {
             let posX = (Math.random() - 0.5) * particleDistance;
@@ -131,9 +139,9 @@ const canvas = useRef(0);
                 .geometry
                 .vertices
                 .forEach(particle => {
-                    particle.y += 0.05;
-                    if (particle.y > 10) {
-                        particle.y = -20
+                    particle.y -= 0.01;
+                    if (particle.y < -10) {
+                        particle.y = 20
                     }
                     particleSys.geometry.verticesNeedUpdate = true;
                 })
@@ -142,18 +150,74 @@ const canvas = useRef(0);
         scene.add(particleSys)
 
 
+        // CHARACTER ADDON FOR MAIN MENU
+        let mixer;
+        const loader = new GLTFLoader()
+            loader.load("knight.gltf", function (object) {
+                object.scene.position.x = 0;
+                object.scene.position.y = -2;
+                object.scene.position.z = -2;
+                console.log(object.scene.position)
+                object
+                    .scene
+                    .scale
+                    .set(1.2, 1.2, 1.2)
+                obj.current = object;
+                mixer = new THREE.AnimationMixer(obj.current.scene);
+                mixer
+                    .clipAction(obj.current.animations[5])
+                    .play();
+                scene.add(obj.current.scene);
+            },);
+           // setTimeout(()=>mixer.clipAction(obj.animations[1]).play(), 8000)// WORKS
+ 
+            setTimeout(()=>{
+                console.log(animationTransition)
+             }, 16000)// WORKS
+
         renderer.setSize(width, height)
         canvas.current.appendChild(renderer.domElement)
-        scene.background = new THREE.Color('black')
-
+        const textu = new THREE.TextureLoader().load( "/textures/background.jpg" );
+        textu.minFilter = THREE.LinearFilter ;
+        scene.background = textu;
         const animate = ()=>{
+            let delta = clock.getDelta();
+            if(mixer){
+                mixer.update(delta)
+                renderer.render(scene, camera)
+            }
             renderer.render(scene, camera)
             window.requestAnimationFrame(animate);
         }
         animate()
-        setScene("Scene set")
-    }
-    }, [scene])
+    switch(animationTransition) {
+            case 0:
+              // code block
+              setTimeout(()=>{
+              console.log(obj.current.scene.position)
+              let tween = new TWEEN
+              .Tween(obj.current.scene.position)
+              .to({x: 4, y: -2, z: -2, isVector3: true}, 5000)
+              .start()
+              let animateTween = (time)=>{
+                TWEEN.update(time)
+                requestAnimationFrame(animateTween)
+            }
+            console.log("SWITCH WORKING")
+            console.log(obj.current.scene.position)
+            requestAnimationFrame(animateTween)
+        }, 19000)
+              break;
+            case 2:
+              // code block
+              break;
+            default:
+              // code block
+          }
+    }, [animationTransition])
+
+
+
 
 
     return(

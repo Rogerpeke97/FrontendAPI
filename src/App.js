@@ -12,6 +12,7 @@ import {
 } from "react-router-dom";
 import { PageContext } from './pageContext'
 import { useState } from 'react';
+import Account from './components/account';
 
 function App() {
 
@@ -36,6 +37,12 @@ const [value, setValue] = useState("HomePage")
     <div className="App">
       <Navbar/>
       <Game/>
+    </div>
+    }></Route>
+    <Route exact path="/account" render= {props =>
+    <div className="App">
+      <Navbar/>
+      <Account/>
     </div>
     }></Route>
     </PageContext.Provider>

@@ -30,7 +30,7 @@ let style = {
 const Login = ()=>{
     const input = useRef(null);
     async function logIn(){
-        axios.post('http://localhost:8080/signin', 
+        axios.post('http://localhost:8080/account', 
         {username: input.current.value, password: "Son123"},
         {headers: {
             // Overwrite Axios's automatically set Content-Type

@@ -2,6 +2,9 @@ import {useRef, useEffect, useState} from 'react'
 import * as THREE from "three";
 //import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import TWEEN from '@tweenjs/tween.js'
+
+
 const OrbitControls = require('three-orbit-controls')(THREE);
 
 let style = {
@@ -19,6 +22,12 @@ const Game = () => {
     const canvas = useRef(0);
     const [scene,
         setScene] = useState("Scene not set");
+    let obj = useRef(0);
+    let switcher = useRef(0);
+    let mixer = useRef(0);
+    let xValueMovement = useRef(0);
+    let yRotationMovement = useRef(0);
+    let animationStopOrStart = useRef(false)
     useEffect(() => {
         if (scene === "Scene not set") {
             let height = canvas.current.clientHeight
@@ -30,10 +39,7 @@ const Game = () => {
             camera
                 .position
                 .set(0, 0.5, 6);
-            let controls = new OrbitControls(camera, renderer.domElement);
-            controls
-                .target
-                .set(0, 0, 0);
+
             const color = 'yellow';
             let clock = new THREE.Clock();
             const intensity = 1;
@@ -66,8 +72,6 @@ const Game = () => {
 
         };*/
 
-            let obj;
-            let mixer;
             /*const loader = new OBJLoader(manager);
         loader.load( 'alien.obj', function ( object ) {
         object.position.x = 0;
@@ -89,17 +93,89 @@ const Game = () => {
                     .scene
                     .scale
                     .set(0.3, 0.3, 0.3)
-                obj = object;
-                mixer = new THREE.AnimationMixer(obj.scene);
-                mixer
-                    .clipAction(object.animations[5])
-                    .play();
+                obj.current = object;
+                mixer.current = new THREE.AnimationMixer(obj.current.scene);
+                let action = mixer
+                    .current
+                    .clipAction(obj.current.animations[15]) // IDLE ANIMATION
+                action.play()
+                action.clampWhenFinished = true;
+                /*  mixer
+                    .clipAction(object.animations[5])// WALKING ANIMATION
+                    .play();*/
                 scene.add(object.scene);
+                switcher.current = 1
                 animationCheck()
             },);
-            let animationCheck = () => {
-                console.log(obj)
-                console.log(obj.animations[0])
+
+            //SETTING THE ARROW EVENTS
+            window.addEventListener('keydown', (e) => {
+                if (e.key === "ArrowDown") {
+                    animationStopOrStart.current = true
+                    characterGoBack();
+                }
+            })
+            window.addEventListener('keyup', (e) => {
+                if (e.key === "ArrowDown") {
+                    animationStopOrStart.current = false
+                    characterGoBack();
+                }
+            })
+
+            //ARROW DOWN
+            let characterGoBack = () => {
+                //DISPLAY ANIMATION
+                let action = mixer
+                .current
+                .clipAction(obj.current.animations[5])
+                console.log(obj.current.scene.rotation.y)
+                if (obj.current.scene.rotation.y === 2) {
+                    switch(animationStopOrStart.current) {
+                        case true:
+                          action.play();
+                          action.clampWhenFinished = true;
+                          break;
+                        case false:
+                          action.stop();
+                          break;
+                        default:
+                      }
+                    xValueMovement.current = xValueMovement.current + 0.01;
+                    let tween = new TWEEN
+                    .Tween(obj.current.scene.position)
+                    .to({
+                        x: xValueMovement.current,
+                        y: 0,
+                        z: 4
+                    })
+                    .start()
+                let animateTween = (time) => {
+                    TWEEN.update(time)
+                    requestAnimationFrame(animateTween)
+                }
+                requestAnimationFrame(animateTween)
+                } 
+                else if(obj.current.scene.rotation.y <= 2){
+                    console.log(yRotationMovement.current)
+                    let tween = new TWEEN
+                        .Tween(obj.current.scene.rotation)
+                        .to({
+                            x: 0,
+                            y: 2,
+                            z: 0
+                        }, 200)
+                        .onComplete(()=>{
+                            if(obj.current.scene.rotation.y === 2){
+                                action.stop();
+                            }
+                        })
+                        .start()
+                    let animateTween = (time) => {
+                        TWEEN.update(time)
+                        requestAnimationFrame(animateTween)
+                    }
+                    requestAnimationFrame(animateTween)
+                }
             }
 
             //PLANE
@@ -121,12 +197,13 @@ const Game = () => {
                     plane.rotation.x = -Math.PI / 2;
                 }
             }
-
             const animate = () => {
 
                 let delta = clock.getDelta();
-                if(mixer){
-                    mixer.update(delta)
+                if (switcher.current === 1) {
+                    mixer
+                        .current
+                        .update(delta)
                     renderer.render(scene, camera)
                 }
                 renderer.render(scene, camera)

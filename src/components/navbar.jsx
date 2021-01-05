@@ -92,12 +92,15 @@ const Navbar = ()=>{
         console.log( item, loaded, total );
 
     };
+
+    //DRAGON
     let obj;
     const loader = new OBJLoader(manager);
     loader.load( 'earth.obj', function ( object ) {
         object.position.x = 0;
         object.position.y = -1.5;
         object.position.z = -4;
+        console.log(object)
         obj = object;
         scene.add( obj );
     } );

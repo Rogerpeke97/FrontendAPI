@@ -4,7 +4,6 @@ import * as THREE from "three";
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import TWEEN from '@tweenjs/tween.js'
 
-
 const OrbitControls = require('three-orbit-controls')(THREE);
 
 let style = {
@@ -25,9 +24,9 @@ const Game = () => {
     let obj = useRef(0);
     let switcher = useRef(0);
     let mixer = useRef(0);
-    let xValueMovement = useRef(0);
-    let yRotationMovement = useRef(0);
-    let animationStopOrStart = useRef(false)
+    let keydownStoppedLeft = useRef(false);
+    let keydownStoppedRight = useRef(false);
+    let trackedKeys = useRef(0)
     useEffect(() => {
         if (scene === "Scene not set") {
             let height = canvas.current.clientHeight
@@ -39,7 +38,6 @@ const Game = () => {
             camera
                 .position
                 .set(0, 0.5, 6);
-
             const color = 'yellow';
             let clock = new THREE.Clock();
             const intensity = 1;
@@ -105,119 +103,137 @@ const Game = () => {
                     .play();*/
                 scene.add(object.scene);
                 switcher.current = 1
-                animationCheck()
             },);
 
-            //SETTING THE ARROW EVENTS
+            //SETTING THE ARROW EVENTS ARROW RIGHT MOVE RIGHT
+            // STORING THE KEY VALUES IN TRACKEDKEYS DUE TO DELAY
+            //KEYDOWN EVENT AND LOOPING THROUGH CHARROTATEANDMOVE
+            //TO CHECK WHERE TO MOVE THE CHARACTER BASED ON TRUE OR FALSE
+            //SEE https://yojimbo87.github.io/2012/08/23/repeated-and-multiple-key-press-events-without-stuttering-in-javascript.html for full understanding of delay.
+            //Repeated or multiple key press events in JavaScript can cause a little pause or delay which leads to stuttering behavior, 
+            //for example, in games which are using keyboard based navigation. This delay is probably caused by internal browser timeout between key press changes.
+            trackedKeys.current = {
+                arrowLeft: false, // left arrow
+                arrowRight: false, // right arrow
+            };
+
             window.addEventListener('keydown', (e) => {
-                if (e.key === "ArrowDown") {
-                    animationStopOrStart.current = true
-                    characterGoBack();
+                if (e.key === "ArrowRight" && trackedKeys.current["arrowRight"] === false) {
+                    keydownStoppedRight.current = false;
+                    keydownStoppedLeft.current = true;
+                    trackedKeys.current.arrowRight = true;
+                    trackedKeys.current.arrowLeft = false;
+                }
+                else if (e.key === "ArrowLeft" && trackedKeys.current["arrowLeft"] === false){
+                    keydownStoppedLeft.current = false;
+                    keydownStoppedRight.current = true;
+                    trackedKeys.current.arrowRight = false;
+                    trackedKeys.current.arrowLeft = true;
                 }
             })
             window.addEventListener('keyup', (e) => {
-                if (e.key === "ArrowDown") {
-                    animationStopOrStart.current = false
-                    characterGoBack();
+                if (e.key === "ArrowRight") {
+                    keydownStoppedRight.current = true;
+                    trackedKeys.current.arrowRight = false;
+                }
+                if (e.key === "ArrowLeft") {
+                    keydownStoppedLeft.current = true;
+                    trackedKeys.current.arrowLeft = false;
                 }
             })
+            //MOVE LEFT
 
-            //ARROW DOWN
-            let characterGoBack = () => {
-                //DISPLAY ANIMATION
-                let action = mixer
-                .current
-                .clipAction(obj.current.animations[5])
-                console.log(obj.current.scene.rotation.y)
-                if (obj.current.scene.rotation.y === 2) {
-                    switch(animationStopOrStart.current) {
-                        case true:
-                          action.play();
-                          action.clampWhenFinished = true;
-                          break;
-                        case false:
-                          action.stop();
-                          break;
-                        default:
-                      }
-                    xValueMovement.current = xValueMovement.current + 0.01;
-                    let tween = new TWEEN
-                    .Tween(obj.current.scene.position)
-                    .to({
-                        x: xValueMovement.current,
-                        y: 0,
-                        z: 4
-                    })
-                    .start()
-                let animateTween = (time) => {
-                    TWEEN.update(time)
-                    requestAnimationFrame(animateTween)
-                }
-                requestAnimationFrame(animateTween)
-                } 
-                else if(obj.current.scene.rotation.y <= 2){
-                    console.log(yRotationMovement.current)
-                    let tween = new TWEEN
-                        .Tween(obj.current.scene.rotation)
-                        .to({
-                            x: 0,
-                            y: 2,
-                            z: 0
-                        }, 200)
-                        .onComplete(()=>{
-                            if(obj.current.scene.rotation.y === 2){
-                                action.stop();
+            let charRotateAndMove = () => {
+                console.log(JSON.stringify(trackedKeys.current));
+                    switch (JSON.stringify(trackedKeys.current)) {
+                    case `{"arrowLeft":true,"arrowRight":false}`:
+                        console.log("ROTATING LEFT")
+                        let tween2 = new TWEEN
+                            .Tween(obj.current.scene.position)
+                            .to({
+                                x: obj.current.scene.position.x - 0.5,
+                                y: 0,
+                                z: 4
+                            })
+                            .onComplete(()=>{
+                            })
+                            .start()
+                            let animateTween2 = (time) => {
+                            if (keydownStoppedLeft.current === true) {     
+                                TWEEN.remove(tween2);
+                            } else {
+                                TWEEN.update(time)
+                                requestAnimationFrame(animateTween2)
                             }
-                        })
-                        .start()
-                    let animateTween = (time) => {
-                        TWEEN.update(time)
-                        requestAnimationFrame(animateTween)
+                        }
+                        requestAnimationFrame(animateTween2);
+                        break;
+                    case `{"arrowLeft":false,"arrowRight":true}`:
+                        console.log("ROTATING RIGHT");
+                        let tween4 = new TWEEN
+                            .Tween(obj.current.scene.position)
+                            .to({
+                                x: obj.current.scene.position.x + 0.5,
+                                y: 0,
+                                z: 4
+                            })
+                            .onComplete(()=>{
+                            })
+                            .start()
+                            let animateTween4 = (time) => {
+                            if (keydownStoppedRight.current === true) {
+                                TWEEN.remove(tween4);
+                            } else {
+                                TWEEN.update(time)
+                                requestAnimationFrame(animateTween4)
+                            }
+                        }
+                        requestAnimationFrame(animateTween4)
+                        break;
+                    default:
+                }
+            }
+            setInterval(()=>charRotateAndMove(), 50);
+                //PLANE
+                for (let i = 4; i > -1; i -= 0.5) {
+                    for (let j = -2; j < 2; j += 0.5) {
+                        let floorTexture = new THREE
+                            .TextureLoader()
+                            .load('frozengrass.jpg');
+                        let floorBump = new THREE
+                            .TextureLoader()
+                            .load('sunbump.png');
+                        const geometry = new THREE.PlaneBufferGeometry(0.5, 0.5, 8);
+                        const planeMaterial = new THREE.MeshPhongMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.005});;
+                        const plane = new THREE.Mesh(geometry, planeMaterial);
+                        scene.add(plane)
+                        plane.position.x = j;
+                        plane.position.y = 0;
+                        plane.position.z = i;
+                        plane.rotation.x = -Math.PI / 2;
                     }
-                    requestAnimationFrame(animateTween)
                 }
-            }
+                const animate = () => {
 
-            //PLANE
-            for (let i = 4; i > -1; i -= 0.5) {
-                for (let j = -2; j < 2; j += 0.5) {
-                    let floorTexture = new THREE
-                        .TextureLoader()
-                        .load('frozengrass.jpg');
-                    let floorBump = new THREE
-                        .TextureLoader()
-                        .load('sunbump.png');
-                    const geometry = new THREE.PlaneBufferGeometry(0.5, 0.5, 8);
-                    const planeMaterial = new THREE.MeshPhongMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.005});;
-                    const plane = new THREE.Mesh(geometry, planeMaterial);
-                    scene.add(plane)
-                    plane.position.x = j;
-                    plane.position.y = 0;
-                    plane.position.z = i;
-                    plane.rotation.x = -Math.PI / 2;
-                }
-            }
-            const animate = () => {
-
-                let delta = clock.getDelta();
-                if (switcher.current === 1) {
-                    mixer
-                        .current
-                        .update(delta)
+                    let delta = clock.getDelta();
+                    if (switcher.current === 1) {
+                        mixer
+                            .current
+                            .update(delta)
+                        renderer.render(scene, camera)
+                    }
                     renderer.render(scene, camera)
+                    window.requestAnimationFrame(animate);
                 }
-                renderer.render(scene, camera)
-                window.requestAnimationFrame(animate);
+                animate()
+                setScene("Scene set")
             }
-            animate()
-            setScene("Scene set")
-        }
-    }, [scene])
-    return (
-        <div>
-            <div style={style.canvas} ref={canvas}></div>
-        </div>
-    )
-}
+        },
+        [scene]) 
+        return (
+            <div>
+                <div style={style.canvas} ref={canvas}></div>
+            </div>
+        )}
 
-export default Game;
+    export default Game;

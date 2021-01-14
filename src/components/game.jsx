@@ -2,7 +2,11 @@ import {useRef, useEffect, useState} from 'react'
 import * as THREE from "three";
 //import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import TWEEN from '@tweenjs/tween.js'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+
+
+import TWEEN from '@tweenjs/tween.js';
+
 
 const OrbitControls = require('three-orbit-controls')(THREE);
 
@@ -33,10 +37,12 @@ const Game = () => {
     let charAngle = useRef(0);
     let cameraAngle = useRef(-0.005);
     let knightMovementXAxis = useRef(0);
-    let knightMovementZAxis = useRef(0);
-    let knightMovementYAxis = useRef(5);
     let knightRotationX = useRef(0);
     let knightRotationZ = useRef(0);
+    let trees = useRef(0);
+    let angleSphereForTrees = useRef(0);
+    let treeRotationAngle = useRef(0);
+    let bushes = useRef(0);
     useEffect(() => {
         if (scene === "Scene not set") {
             let height = canvas.current.clientHeight
@@ -51,11 +57,18 @@ const Game = () => {
                 .set(0, 0, 0)*/
             camera
                 .position
-                .set(0, 2, 6);
+                .set(0, 8, 2);
             const color = 'yellow';
             const colorMoon = 'white';
             let clock = new THREE.Clock();
-            const intensity = 1;
+            const intensity = 0.4;
+            //BACKGROUND LIGHT
+            const hemiLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
+            hemiLight
+                .position
+                .set(0, 500, -2);
+            scene.add(hemiLight);
+
             const light = new THREE.DirectionalLight(color, intensity);
             light
                 .position
@@ -80,13 +93,112 @@ const Game = () => {
             canvas
                 .current
                 .appendChild(renderer.domElement)
-            scene.background = new THREE.Color('black')
+            const textu = new THREE
+                .TextureLoader()
+                .load("/textures/skyBackground.jpeg");
+            textu.minFilter = THREE.LinearFilter;
+            scene.background = textu;
+
+
+            //TREES
+            //FOR DEBUGGING DEACTIVATED
+            trees.current = []
+            const treeLoader = new GLTFLoader();
+            for(let i = 0; i < 1; i++){
+                for(let j = 0; j < 25; j++){
+                treeLoader.load( '/textures/tree.gltf', ( tree )=>{
+                    tree.scene.position.x = Math.floor(Math.random() * 15) - 7; //RANDOM NUMBER BETWEEN -10 AND 10
+                    tree.scene.scale.set(0.04, 0.04, 0.04);
+                    let zRotationNewRadius = Math.sqrt(49 - (tree.scene.position.x * tree.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                    let z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                    tree.scene.position.z = -z
+                    // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE RIGHT ROTATION AND Y POSITION
+                    // AROUND THE SPHERE
+                    // TREE ROTATION SIN ANGLE = OPOSSITE OVER HYPOTHENUSE
+                    let treeRotationZ = Math.asin(tree.scene.position.x / 7); //SPHERE RADIUS = 7
+                    tree.scene.rotation.z = -treeRotationZ;
+                    let treeRotationX = treeRotationAngle.current * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)
+                    tree.scene.rotation.x = treeRotationX;
+
+                    //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
+                    let treePositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                    tree.scene.position.y = treePositionY;
+                    trees.current.push(tree);
+                    scene.add(tree.scene);
+                    angleSphereForTrees.current+=0.28;
+                    treeRotationAngle.current-=0.28;
+                })
+            }
+            }
+
+            //BUSHES
+            //CREDITS TO ELITEMASTER from cgtrader.com
+            bushes.current = []
+            const bushLoader = new GLTFLoader();
+            for(let i = 0; i < 1; i++){
+                for(let j = 0; j < 100; j++){
+                    let bushTexture = new THREE
+                    .TextureLoader()
+                    .load('leaftexture.png');
+                    let geometrySphere = new THREE.SphereGeometry(0.05, 10, 10);
+                    let materialSphere = new THREE.MeshPhongMaterial({map: bushTexture, alphaTest: 0.1,
+                        color: 'green', // removes black squares
+                        blending: THREE.NormalBlending,
+                        transparent: true});
+                    let bush = new THREE.Mesh(geometrySphere, materialSphere);
+                    bush.position.x = Math.floor(Math.random() * 15) - 7; //RANDOM NUMBER BETWEEN -10 AND 10
+                    let zRotationNewRadius = Math.sqrt(49 - (bush.position.x * bush.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                    let z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                    bush.position.z = -z
+                    // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE RIGHT ROTATION AND Y POSITION
+                    // AROUND THE SPHERE
+                    // TREE ROTATION SIN ANGLE = OPOSSITE OVER HYPOTHENUSE
+                    let bushRotationZ = Math.asin(bush.position.x / 7); //SPHERE RADIUS = 7
+                    bush.rotation.z = -bushRotationZ - 1.57; // PI / 2
+                    let bushRotationX = treeRotationAngle.current * (180 / Math.PI); //The bush rotation ON X AXIS (FORWARDS), REUSING TREE ROTATION SINCE IT ROTATES THE SAME AMOUNT ON X
+                    bush.rotation.x = bushRotationX;
+
+                    //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
+                    let bushPositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                    bush.position.y = bushPositionY + 0.05;
+                    bushes.current.push(bush);
+                    scene.add(bush);
+                    angleSphereForTrees.current+=0.07;
+                    treeRotationAngle.current-=0.07;
+                /*bushLoader.load( 'bush.glb', ( bush )=>{
+                    bush.scene.position.x = Math.floor(Math.random() * 15) - 7; //RANDOM NUMBER BETWEEN -10 AND 10
+                    //bush.scene.scale.set(0.02, 0.02, 0.02);
+                    let zRotationNewRadius = Math.sqrt(49 - (bush.scene.position.x * bush.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                    let z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                    bush.scene.position.z = -z
+                    // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE RIGHT ROTATION AND Y POSITION
+                    // AROUND THE SPHERE
+                    // TREE ROTATION SIN ANGLE = OPOSSITE OVER HYPOTHENUSE
+                    let bushRotationZ = Math.asin(bush.scene.position.x / 7); //SPHERE RADIUS = 7
+                    bush.scene.rotation.z = -bushRotationZ;
+                    let bushRotationX = treeRotationAngle.current * (180 / Math.PI); //The bush rotation ON X AXIS (FORWARDS), REUSING TREE ROTATION SINCE IT ROTATES THE SAME AMOUNT ON X
+                    bush.scene.rotation.x = bushRotationX;
+
+                    //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
+                    let bushPositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                    bush.scene.position.y = bushPositionY;
+                    bushes.current.push(bush.scene);
+                    scene.add(bush.scene);
+                })*/
+            }
+            }
+
+
+
+
+
+
 
 
             const loader = new GLTFLoader()
             loader.load("knight.gltf", function (object) {
                 object.scene.position.x = 0;
-                object.scene.position.y = 5;
+                object.scene.position.y = 7; // CIRCLE RADIUS
                 object.scene.position.z = 0;
                 object.scene.rotation.y = -Math.PI;
                 object
@@ -149,34 +261,33 @@ const Game = () => {
                         let armorMan = obj.current.scene;
                         // console.log(armorMan.scene.position); // x:0, y:0, z:4; CALCULATE POSITION IN
                         // SPHERE/GOTTA ADJUST THE RADIUS OF THE CIRCLE AS HE MOVES LEFT OR RIGHT SPHERE
-                        // ARMOR MAN WHEN z GETS TO 5 IT BREAKS THE SQRT FUNCTION
+                        // ARMOR MAN WHEN z GETS TO 7 IT BREAKS THE SQRT FUNCTION
                         circleAngle.current = circleAngle.current + 0.0001;
                         charAngle.current = charAngle.current - 0.0001;
                         cameraAngle.current = cameraAngle.current + 0.0001;
-                        if (circleAngle.current > 4.997) {
-                            circleAngle.current = 0;
-                            charAngle.current = 0;
+                        if (circleAngle.current > 6.999) {
+                            circleAngle.current = 0.0001;
+                            charAngle.current = -0.0001;
                         }
+
                         //Y ROTATION FROM CHARACTER CHAR SIZE Y = 0.5805655952 = R = 0.2902827976
                         let xChar = charAngle.current * (180 / Math.PI); //The character rotation ON X AXIS (FORWARDS)
 
-                        let zRotationNewRadius = Math.sqrt(25 - (knightMovementXAxis.current * knightMovementXAxis.current)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        let zRotationNewRadius = Math.sqrt(49 - (knightMovementXAxis.current * knightMovementXAxis.current)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
 
-                        knightRotationZ.current = Math.asin(knightMovementXAxis.current / 5); //ROTATION ON THE KNIGHT Z AXIS WHILE MOVING LEFT OR RIGHT () ROTATION TO THE SIDES
+                        knightRotationZ.current = Math.asin(knightMovementXAxis.current / 7); //ROTATION ON THE KNIGHT Z AXIS WHILE MOVING LEFT OR RIGHT () ROTATION TO THE SIDES
 
                         let y = Math.cos(circleAngle.current * (180 / Math.PI)) * zRotationNewRadius;
                         let z = Math.sin(circleAngle.current * (180 / Math.PI)) * zRotationNewRadius;
                         //KNIGHT MOVEMENTS
-                        knightMovementZAxis.current = -z;
-                        knightMovementYAxis.current = y;
                         knightRotationX.current = xChar;
                         armorMan.position.y = y;
                         armorMan.rotation.x = xChar;
                         armorMan.rotation.z = knightRotationZ.current;
                         armorMan.position.z = -z;
                         //CAMERA MOVEMENTS
-                        let cameraY = Math.cos(cameraAngle.current * (180 / Math.PI)) * 6;
-                        let cameraZ = Math.sin(cameraAngle.current * (180 / Math.PI)) * 6;
+                        let cameraY = Math.cos(cameraAngle.current * (180 / Math.PI)) * 8;
+                        let cameraZ = Math.sin(cameraAngle.current * (180 / Math.PI)) * 8;
                         camera
                             .position
                             .set(0, cameraY, -cameraZ);
@@ -184,15 +295,84 @@ const Game = () => {
                         camera
                             .rotation
                             .set(xChar - 0.1, 0, 0);
-                            break;
+
+                        //CHARACTER MOVEMENTS KEY EVENTS
+                        switch (JSON.stringify(trackedKeys.current)) {
+                            case `{"arrowLeft":true,"arrowRight":false}`: //MOVE LEFT
+                                centerChar.current = false;
+                                console.log("MOVING LEFT");
+                                knightMovementXAxis.current = armorMan.position.x - 0.01;
+                                armorMan.position.x = knightMovementXAxis.current;
+                                //ROTATION
+                                if (isRotating.current.isRotatingLeft === "start") {
+                                    let tweenRotateLeft = new TWEEN
+                                        .Tween(obj.current.scene.rotation)
+                                        .to({
+                                            y: -2.5, // FROM -3 TO -2.5
+                                        }, 50)
+                                        .onComplete(() => {
+                                            TWEEN.remove(tweenRotateLeft);
+                                            isRotating
+                                                .current
+                                                .rotateRight();
+                                            centerChar.current = true;
+                                        })
+                                        .start()
+                                    let animateTweenRotateLeft = (time) => {
+                                        if (trackedKeys.current.arrowLeft === false) {
+                                            TWEEN.remove(tweenRotateLeft);
+                                            centerChar.current = true;
+                                        } else {
+                                            TWEEN.update(time)
+                                            requestAnimationFrame(animateTweenRotateLeft)
+                                        }
+                                    }
+                                    requestAnimationFrame(animateTweenRotateLeft);
+                                }
+                                break;
+                            case `{"arrowLeft":false,"arrowRight":true}`: // MOVE RIGHT
+                                console.log("MOVING RIGHT");
+                                centerChar.current = false;
+                                knightMovementXAxis.current = armorMan.position.x + 0.01;
+                                armorMan.position.x = knightMovementXAxis.current;
+                                //ROTATION
+                                if (isRotating.current.isRotatingRight === "start") {
+                                    let tweenRotateRight = new TWEEN
+                                        .Tween(obj.current.scene.rotation)
+                                        .to({
+                                            y: -3.5, // FROM -3 TO -3.5
+                                        }, 50)
+                                        .onComplete(() => {
+                                            TWEEN.remove(tweenRotateRight);
+                                            isRotating
+                                                .current
+                                                .rotateLeft();
+                                            centerChar.current = true;
+                                        })
+                                        .start()
+                                    let animateTweenRotateRight = (time) => {
+                                        if (trackedKeys.current.arrowRight === false) {
+                                            TWEEN.remove(tweenRotateRight);
+                                            centerChar.current = true;
+                                        } else {
+                                            TWEEN.update(time)
+                                            requestAnimationFrame(animateTweenRotateRight)
+                                        }
+                                    }
+                                    requestAnimationFrame(animateTweenRotateRight);
+                                }
+                                break;
+                            default:
+                        }
+                        break;
                     default:
                 }
             }
-            setInterval(() => runAndAnimation(), 10); // USING INTERVAL SINCE TWEENING WOULD MAKE PERFORMANCE DROP, WILL MOVE CHARACTER SLIGHTLY EACH 50ms
-            // ANIMATION TO THE OTHER SIDE OF THE CIRCLE SETTING THE ARROW EVENTS ARROW RIGHT
-            // MOVE RIGHT STORING THE KEY VALUES IN TRACKEDKEYS DUE TO DELAY KEYDOWN EVENT
-            // AND LOOPING THROUGH CHARROTATEANDMOVE TO CHECK WHERE TO MOVE THE CHARACTER
-            // BASED ON TRUE OR FALSE SEE
+            setInterval(() => runAndAnimation(), 5); // USING INTERVAL SINCE TWEENING WOULD MAKE PERFORMANCE DROP, WILL MOVE CHARACTER SLIGHTLY EACH 50ms
+            // ANIMATION TO THE OTHER SIDE OF THE CIRCLE SETTING THE ARROW EVENTS ARROW
+            // RIGHT MOVE RIGHT STORING THE KEY VALUES IN TRACKEDKEYS DUE TO DELAY KEYDOWN
+            // EVENT AND LOOPING THROUGH CHARROTATEANDMOVE TO CHECK WHERE TO MOVE THE
+            // CHARACTER BASED ON TRUE OR FALSE SEE
             // https://yojimbo87.github.io/2012/08/23/repeated-and-multiple-key-press-events
             // - without-stuttering-in-javascript.html for full understanding of delay.
             // Repeated or multiple key press events in JavaScript can cause a little pause
@@ -255,112 +435,11 @@ const Game = () => {
                 }
             })
 
-            //MOVING
+            /*MOVING
             let charRotateAndMove = () => {
-                switch (JSON.stringify(trackedKeys.current)) {
-                    case `{"arrowLeft":true,"arrowRight":false}`: //MOVE LEFT
-                        centerChar.current = false;
-                        console.log("MOVING LEFT");
-                        knightMovementXAxis.current = obj.current.scene.position.x;
-                        let tween2 = new TWEEN
-                            .Tween(obj.current.scene.position)
-                            .to({
-                                x: knightMovementXAxis.current - 0.7,
-                                y: knightMovementYAxis.current,
-                                z: knightMovementZAxis.current
-                            }, 500)
-                            .start()
-                            //CALCULATE THE RADIUS FROM THE SIDES
-                            let animateTween2 = (time) => {
-                            if (trackedKeys.current.arrowLeft === false) {
-                                TWEEN.remove(tween2);
-                            } else {
-                                TWEEN.update(time)
-                                requestAnimationFrame(animateTween2)
-                            }
-                        }
-                        requestAnimationFrame(animateTween2);
-                        //ROTATION
-                        if (isRotating.current.isRotatingLeft === "start") {
-                            let tweenRotateLeft = new TWEEN
-                                .Tween(obj.current.scene.rotation)
-                                .to({
-                                    x: knightRotationX.current, y: -2.5, // FROM -3 TO -2.5
-                                    z: knightRotationZ.current
-                                }, 20)
-                                .onComplete(() => {
-                                    TWEEN.remove(tweenRotateLeft);
-                                    isRotating
-                                        .current
-                                        .rotateRight();
-                                    centerChar.current = true;
-                                })
-                                .start()
-                            let animateTweenRotateLeft = (time) => {
-                                if (trackedKeys.current.arrowLeft === false) {
-                                    TWEEN.remove(tweenRotateLeft);
-                                    centerChar.current = true;
-                                } else {
-                                    TWEEN.update(time)
-                                    requestAnimationFrame(animateTweenRotateLeft)
-                                }
-                            }
-                            requestAnimationFrame(animateTweenRotateLeft);
-                        }
-                        break;
-                    case `{"arrowLeft":false,"arrowRight":true}`: // MOVE RIGHT
-                        console.log("MOVING RIGHT");
-                        centerChar.current = false;
-                        knightMovementXAxis.current = obj.current.scene.position.x;
-                        let tween4 = new TWEEN
-                            .Tween(obj.current.scene.position)
-                            .to({
-                                x: knightMovementXAxis.current + 0.7,
-                                y: knightMovementYAxis.current,
-                                z: knightMovementZAxis.current
-                            }, 500)
-                            .start()
-                            let animateTween4 = (time) => {
-                            if (trackedKeys.current.arrowRight === false) {
-                                TWEEN.remove(tween4);
-                            } else {
-                                TWEEN.update(time)
-                                requestAnimationFrame(animateTween4)
-                            }
-                        }
-                        requestAnimationFrame(animateTween4)
-                        //ROTATION
-                        if (isRotating.current.isRotatingRight === "start") {
-                            let tweenRotateRight = new TWEEN
-                                .Tween(obj.current.scene.rotation)
-                                .to({
-                                    x: knightRotationX.current, y: -3.5, // FROM -3 TO -3.5
-                                    z: knightRotationZ.current
-                                }, 20)
-                                .onComplete(() => {
-                                    TWEEN.remove(tweenRotateRight);
-                                    isRotating
-                                        .current
-                                        .rotateLeft();
-                                    centerChar.current = true;
-                                })
-                                .start()
-                            let animateTweenRotateRight = (time) => {
-                                if (trackedKeys.current.arrowRight === false) {
-                                    TWEEN.remove(tweenRotateRight);
-                                    centerChar.current = true;
-                                } else {
-                                    TWEEN.update(time)
-                                    requestAnimationFrame(animateTweenRotateRight)
-                                }
-                            }
-                            requestAnimationFrame(animateTweenRotateRight);
-                        }
-                        break;
-                    default:
-                }
+
             }
-            setInterval(() => charRotateAndMove(), 20);
+            setInterval(() => charRotateAndMove(), 5);*/
 
             //ROTATIOn CENTER CHARACTER
             let centerCharFunction = () => {
@@ -368,8 +447,7 @@ const Game = () => {
                     let tweenRotateCenter = new TWEEN
                         .Tween(obj.current.scene.rotation)
                         .to({
-                            x: knightRotationX.current, y: -3, // FROM -3 TO -3
-                            z: knightRotationZ.current
+                            y: -3, // FROM -3 TO -3
                         }, 50)
                         .onComplete(() => {
                             TWEEN.remove(tweenRotateCenter)
@@ -383,7 +461,7 @@ const Game = () => {
                     requestAnimationFrame(animateTweenRotateCenter);
                 }
             }
-            setInterval(() => centerCharFunction(), 20);
+            setInterval(() => centerCharFunction(), 50);
 
             //JUMP ANIMATION
             let jump = () => {
@@ -402,13 +480,19 @@ const Game = () => {
                     floorTexture.wrapT = THREE.RepeatWrapping;
                     floorTexture
                         .repeat
-                        .set(24, 24);
+                        .set(50, 50);
                 });
             let floorBump = new THREE
                 .TextureLoader()
-                .load('sunbump.png');
-            let geometrySphere = new THREE.SphereGeometry(5, 50, 50);
-            let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.005});
+                .load('sunbump.png', () => {
+                    floorTexture.wrapS = THREE.RepeatWrapping;
+                    floorTexture.wrapT = THREE.RepeatWrapping;
+                    floorTexture
+                        .repeat
+                        .set(50, 50);
+                });
+            let geometrySphere = new THREE.SphereGeometry(7, 50, 50);
+            let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.01});
             let sphere = new THREE.Mesh(geometrySphere, materialSphere);
             sphere.position.x = 0;
             sphere.position.y = 0;

@@ -1,5 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { useContext, useEffect, useRef, useState } from "react";
+import axios from 'axios';
 import * as THREE from "three";
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {
@@ -86,17 +87,10 @@ const Navbar = ()=>{
     useEffect(()=>{
         if(scene === "Scene not set"){
 
-    let manager = new THREE.LoadingManager();
-    manager.onProgress = ( item, loaded, total )=>{
-
-        console.log( item, loaded, total );
-
-    };
-
     //DRAGON
     let obj;
-    const loader = new OBJLoader(manager);
-    loader.load( 'earth.obj', function ( object ) {
+    const loader = new OBJLoader();
+    loader.load( 'earth.obj', ( object )=>{
         object.position.x = 0;
         object.position.y = -1.5;
         object.position.z = -4;
@@ -162,14 +156,20 @@ const Navbar = ()=>{
     const underlineLogin = useRef(0);
     const loginFont = useRef(0);
     const loginButton = useRef(0);
-    const [hoverLogin, setHoverLogin] = useState(0)
-    let logged = ()=>{
+    const [hoverLogin, setHoverLogin] = useState(0);
+    const [logged, setLogged] = useState(null);
+    const [username, setUsername] = useState(null);
+    let loggedIn = ()=>{
         return(
             <div style={{display: "flex"}}>
             <div style={{display: "grid", alignItems:"center"}} >
             <FontAwesomeIcon icon={faChild} />
             </div>
-            <div style={{paddingLeft: "2%"}}>{localStorage.getItem('loginUser')}</div>
+            <div style={{paddingLeft: "2%"}}>
+            <h2 style={style.loginButton} ref={loginFont}>{username}</h2>
+                    <div style={{height: "2px", width: "100%", background:"white",
+                     transform: "scaleX(0)", transition: "all 0.3s ease-out"}} ref={underlineLogin}></div>             
+            </div>
             </div>
         )
     }
@@ -194,6 +194,29 @@ const Navbar = ()=>{
         })
         
     }
+
+    useEffect(()=>{
+        console.log(`Bearer ${localStorage.getItem('user')}`)
+        axios.post('http://localhost:8080/account', 
+        {authorization: localStorage.getItem('user')},
+        {headers: {
+            // Overwrite Axios's automatically set Content-Type
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('user')}`
+          }
+        }
+        )
+        .then(res => {
+            console.log(res);
+            let getUser = res.data.split(" ");
+            setUsername(getUser[0]);
+            setLogged(true);
+          })
+          .catch(error => {
+            console.log(error)
+            setLogged(false);
+        })       
+    }, [])
 
     return(
         <div style={style.navbar}>
@@ -221,7 +244,7 @@ const Navbar = ()=>{
             <div style={style.grid1}>
                 <div style={{display: "grid", alignItems: 'center', justifyContent: 'center', position: "relative"}}>
                 <Link
-                    to={localStorage.getItem('loginUser') ? "/" : "/login"}
+                    to={logged ? "/" : "/login"}
                      style={style.loginButton}
                      ref={loginButton}
                      onMouseEnter={()=>{
@@ -236,10 +259,10 @@ const Navbar = ()=>{
                         underlineLogin.current.style.transform = "scaleX(0)";   
                         setHoverLogin(0);               
                     }}
-                    >{localStorage.getItem('loginUser') ? logged() : notLogged() }</Link>
+                    >{logged ? loggedIn() : notLogged() }</Link>
                  <div style={hoverLogin === 1 ? style.hoverLogin : {display: "none", visibility: "hidden"}}
                   onMouseEnter={()=>setHoverLogin(1)} onMouseLeave={()=>setHoverLogin(0)}>
-                  <Link to={localStorage.getItem('loginUser') ? `/${localStorage.getItem('loginUser')}` : "/login"}
+                  <Link to={logged ? `/${username.current}` : "/login"}
                    style={style.dropdown} onMouseEnter={(e)=>{
                        e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
                        e.currentTarget.style.color = "white";
@@ -251,7 +274,7 @@ const Navbar = ()=>{
                 <FontAwesomeIcon style={{color: "rgb(29, 146, 226)"}} icon={faDiagnoses} />
                   <div style={{paddingLeft: "2%"}}>Account</div>
                   </Link>
-                  <Link to={localStorage.getItem('loginUser') ? "/leaderboard" : "/login"} style={style.dropdown}
+                  <Link to={logged ? "/leaderboard" : "/login"} style={style.dropdown}
                    onMouseEnter={(e)=>{
                        e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
                        e.currentTarget.style.color = "white";

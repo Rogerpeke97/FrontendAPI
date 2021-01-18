@@ -2,10 +2,10 @@ import {useRef, useState, useEffect} from 'react'
 import '../App.css';
 import * as THREE from "three";
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import TWEEN from '@tweenjs/tween.js'
-
 import {Link} from "react-router-dom";
-import {text} from '@fortawesome/fontawesome-svg-core';
+
+const OrbitControls = require('three-orbit-controls')(THREE);
+
 let style = {
     container: {
         backgroundColor: 'transparent',
@@ -71,11 +71,11 @@ let style = {
 
 const HomeScreen = () => {
     const canvas = useRef(0);
-    const [scene,
-        setScene] = useState("Scene not set");
-    let obj = useRef(0);
-    let switcher = useRef(0)
-    let mixer = useRef(0)
+    let switcher = useRef(0);
+    let mixer = useRef(0);
+    let angleSphereForgrass = useRef(0);
+    let grassRotationAngle = useRef(0);
+    let grassStorage = useRef(0);
     useEffect(() => {
         let height = canvas.current.clientHeight
         let width = canvas.current.clientWidth
@@ -87,13 +87,50 @@ const HomeScreen = () => {
         camera
             .position
             .set(0, 0, 4);
-        const color = 'white';
-        const intensity = 1;
-        const light = new THREE.DirectionalLight(color, intensity);
-        light
-            .position
-            .set(0, 0, 3);
-        scene.add(light);
+        let controls = new OrbitControls(camera, renderer.domElement);
+        console.log(controls);
+
+        controls
+            .target
+            .set(0, 0, -2);
+
+        //DIRECTIONAL LIGHT
+        const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+        hemiLight.color.setHSL( 0.6, 1, 0.6 );
+        hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+        hemiLight.position.set( 0, 50, 0 );
+        scene.add( hemiLight );
+
+        const hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
+        scene.add( hemiLightHelper );
+
+        //
+
+        const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+        dirLight.color.setHSL( 0.1, 1, 0.95 );
+        dirLight.position.set( - 1, 1.75, 1 );
+        dirLight.position.multiplyScalar( 30 );
+        scene.add( dirLight );
+
+        dirLight.castShadow = true;
+
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+
+        const d = 50;
+
+        dirLight.shadow.camera.left = - d;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = - d;
+
+        dirLight.shadow.camera.far = 3500;
+        dirLight.shadow.bias = - 0.0001;
+
+        const dirLightHelper = new THREE.DirectionalLightHelper( dirLight, 10 );
+        scene.add( dirLightHelper );
+
+
         let clock = new THREE.Clock();
         window.addEventListener('resize', () => {
             if (canvas.current !== null) {
@@ -146,8 +183,16 @@ const HomeScreen = () => {
         })
         scene.add(particleSys)
         // CHARACTER ADDON FOR MAIN MENU
-        const loader = new GLTFLoader()
+        /*const loader = new GLTFLoader()
         loader.load("knight.gltf", function (object) {
+            object.scene.traverse( ( node )=>{
+
+                if ( node.isMesh ) {
+                    node.castShadow = true;
+                    node.receiveShadow = true; 
+                }
+        
+            } );
             object.scene.position.x = 0;
             object.scene.position.y = -2;
             object.scene.position.z = -2;
@@ -157,21 +202,98 @@ const HomeScreen = () => {
                 .set(1.2, 1.2, 1.2)
             obj.current = object;
             mixer.current = new THREE.AnimationMixer(obj.current.scene);
+            let action = mixer.current.clipAction(obj.current.animations[15]);
+            action.play()
+            action.clampWhenFinished = true;
             scene.add(obj.current.scene);
-            animationOne();
             switcher.current = 1
-        },);
+        },);*/
         // setTimeout(()=>mixer.clipAction(obj.animations[1]).play(), 8000)// WORKS
+        // TRYING A SPHERE
+        let floorTexture = new THREE
+            .TextureLoader()
+            .load('homescreenGrass.jpg', () => {
+                floorTexture.wrapS = THREE.RepeatWrapping;
+                floorTexture.wrapT = THREE.RepeatWrapping;
+                floorTexture
+                    .repeat
+                    .set(2, 2);
+            });
+        let floorBump = new THREE
+            .TextureLoader()
+            .load('sunbump.png', () => {
+                floorTexture.wrapS = THREE.RepeatWrapping;
+                floorTexture.wrapT = THREE.RepeatWrapping;
+                floorTexture
+                    .repeat
+                    .set(2, 2);
+            });
+        let geometrySphere = new THREE.SphereGeometry(7, 100, 100);
+        let materialSphere = new THREE.MeshLambertMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.01});
+        let sphere = new THREE.Mesh(geometrySphere, materialSphere);
+        sphere.position.x = 0;
+        sphere.position.y = -9;
+        sphere.position.z = -2;
+        sphere.rotation.x = 1;
+        sphere.receiveShadow = true;
+        scene.add(sphere);
+        const textu = new THREE
+            .TextureLoader()
+            .load("/textures/skyBackgroundCropped.jpeg");
+        textu.minFilter = THREE.LinearFilter;
+        scene.background = textu;
+        //TREE
+        const treeLoader = new GLTFLoader();
+        treeLoader.load('/textures/tree.gltf', (tree) => {
+
+            tree.scene.position.x = 0;
+            tree.scene.position.y = -2.1;
+            tree.scene.position.z = -3.2;
+            tree.scene.rotation.x = -0.2;
+            tree
+                .scene
+                .scale
+                .set(0.2, 0.2, 0.2);
+            scene.add(tree.scene);
+        })
+
+        //GRASS 
+        //USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
+        grassStorage.current = [];
+        const grassLoader = new GLTFLoader();
+        for(let i = 0; i < 18; i++){
+        grassLoader.load('grassColor.glb', (grass) => {
+            grass.scene.position.x = Math.floor(Math.random() * 9) - 4; //RANDOM NUMBER BETWEEN -7 AND 7
+            
+            let zRotationNewRadius = Math.sqrt(49 - (grass.scene.position.x * grass.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+            let treeRotationZ = Math.asin(grass.scene.position.x / 7); //SPHERE RADIUS = 7
+            let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+            grass.scene.rotation.z = -treeRotationZ;
+            grass.scene.position.z = -z - 2;
+
+            let grassRotationX = grassRotationAngle.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
+            grass.scene.rotation.x = grassRotationX;
+
+            let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+            grass.scene.position.y = grassPositionY - 9;
+
+            //mixer.current = new THREE.AnimationMixer(obj.current.scene);
+            console.log(grass.scene);
+            /*let action = mixer.current.clipAction(obj.current.animations[15]);
+            action.play()
+            action.clampWhenFinished = true;*/
+            grassStorage.current.push(grass);
+            scene.add(grass.scene);
+            angleSphereForgrass.current+=0.001;
+            grassRotationAngle.current-=0.001;
+        })
+    }
 
         renderer.setSize(width, height)
         canvas
             .current
             .appendChild(renderer.domElement)
-        const textu = new THREE
-            .TextureLoader()
-            .load("/textures/background.jpg");
-        textu.minFilter = THREE.LinearFilter;
-        scene.background = textu;
+
         const animate = () => {
             let delta = clock.getDelta();
             if (switcher.current === 1) {
@@ -184,137 +306,9 @@ const HomeScreen = () => {
             window.requestAnimationFrame(animate);
         }
         animate()
-        const animationOne = () => {
-            let action = mixer
-                .current
-                .clipAction(obj.current.animations[15])
-            action.play()
-            action.clampWhenFinished = true;
-            setTimeout(() => {
-                let action = mixer
-                    .current
-                    .clipAction(obj.current.animations[5])
-                action.play();
-                action.clampWhenFinished = true;
-                let tween = new TWEEN
-                    .Tween(obj.current.scene.rotation)
-                    .to({
-                        x: 0,
-                        y: 2,
-                        z: 0
-                    }, 1000)
-                    .onComplete(() => {
-                        let tween = new TWEEN
-                            .Tween(obj.current.scene.position)
-                            .to({
-                                x: 1,
-                                y: -2,
-                                z: -2
-                            }, 1000)
-                            .onComplete(() => {
-                                action.stop();
-                                animationTwo();
-                            })
-                            .start()
-                        let animateTween = (time) => {
-                            TWEEN.update(time)
-                            requestAnimationFrame(animateTween)
-                        }
-                        requestAnimationFrame(animateTween)
-                    })
-                    .start()
-                let animateTween = (time) => {
-                    TWEEN.update(time)
-                    requestAnimationFrame(animateTween)
-                }
-                requestAnimationFrame(animateTween)
-            }, 5000)
-        }
-        const animationTwo = () => {
-            setTimeout(() => {
-                let action = mixer
-                    .current
-                    .clipAction(obj.current.animations[5])
-                action.play();
-                action.clampWhenFinished = true;
-                let tween = new TWEEN
-                    .Tween(obj.current.scene.rotation)
-                    .to({
-                        x: 0,
-                        y: -1,
-                        z: 0
-                    }, 1000)
-                    .onComplete(() => {
-                        let tween = new TWEEN
-                            .Tween(obj.current.scene.position)
-                            .to({
-                                x: -1,
-                                y: -2,
-                                z: -2
-                            }, 2000)
-                            .onComplete(() => {
-                                action.stop();
-                                animationThree();
-                            })
-                            .start()
-                        let animateTween = (time) => {
-                            TWEEN.update(time)
-                            requestAnimationFrame(animateTween)
-                        }
-                        requestAnimationFrame(animateTween)
-                    })
-                    .start()
-                let animateTween = (time) => {
-                    TWEEN.update(time)
-                    requestAnimationFrame(animateTween)
-                }
-                requestAnimationFrame(animateTween)
-            }, 5000)
-        }
+        
 
-        const animationThree = () => {
-            setTimeout(() => {
-                let action = mixer
-                    .current
-                    .clipAction(obj.current.animations[5])
-                action.play();
-                action.clampWhenFinished = true;
-                let tween = new TWEEN
-                    .Tween(obj.current.scene.rotation)
-                    .to({
-                        x: 0,
-                        y: 2,
-                        z: 0
-                    }, 1000)
-                    .onComplete(() => {
-                        let tween = new TWEEN
-                            .Tween(obj.current.scene.position)
-                            .to({
-                                x: 1,
-                                y: -2,
-                                z: -2
-                            }, 2000)
-                            .onComplete(() => {
-                                action.stop();
-                                animationTwo();
-                            })
-                            .start()
-                        let animateTween = (time) => {
-                            TWEEN.update(time)
-                            requestAnimationFrame(animateTween)
-                        }
-                        requestAnimationFrame(animateTween)
-                    })
-                    .start()
-                let animateTween = (time) => {
-                    TWEEN.update(time)
-                    requestAnimationFrame(animateTween)
-                }
-                requestAnimationFrame(animateTween)
-            }, 5000)
-        }
-
-    }, [])
+    })
 
     return (
         <div>

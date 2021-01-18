@@ -11,7 +11,7 @@ import {
   import { faChild, faDiagnoses, faTrophy, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 let style = {
     navbar: {
-        backgroundColor: "olivedrab",
+        backgroundColor: "darkgreen",
         position: "fixed",
         zIndex: "50",
         width: "100%",
@@ -128,7 +128,7 @@ const Navbar = ()=>{
             .position
             .set(0, 0, 3);
         scene.add(light);
-        scene.background = new THREE.Color(0x6B8E23);
+        scene.background = new THREE.Color(0x006400);
   
         window.addEventListener('resize', ()=>{
             if(canvas.current !== null){
@@ -187,11 +187,9 @@ const Navbar = ()=>{
             </div>
         )
     }
-    const logOut = async ()=>{
+    const logOut = ()=>{
          localStorage.clear()
-        .then(()=>{
-            window.location.reload();
-        })
+        window.location.reload();
         
     }
 

@@ -3,6 +3,7 @@ import HomeScreen from './components/homeScreen';
 import Navbar from './components/navbar';
 import Login from './components/login';
 import Game from './components/game'
+import axios from 'axios'
 
 import {
   BrowserRouter as Router,
@@ -11,44 +12,46 @@ import {
   BrowserRouter
 } from "react-router-dom";
 import { PageContext } from './pageContext'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Account from './components/account';
+
+
 
 function App() {
 
-const [value, setValue] = useState("HomePage")
-  
+const [value, setValue] = useState({accountInfo: 0, logged: false, username: ""});
+
   return (
     <BrowserRouter>
     <Switch>
-    <PageContext.Provider value={{value, setValue}}>  
+    <PageContext.Provider value={value}>  
     <Route exact path="/" render = {props =>
       <div className="App">
       <Navbar/>
       <HomeScreen/>
       </div>
-    }></Route>
-    <Route exact path="/login" render= {props =>
-    <div>
-      <Login/>
+    } />
+    <Route exact path="/login" render= { props =>
+    <div> 
+    <Login/>
     </div>
-    }></Route>
+    } />
      <Route exact path="/game" render= {props =>
-    <div className="App">
-      <Navbar/>
-      <Game/>
-    </div>
-    }></Route>
+     <div className="App">
+     <Navbar/>
+     <Game/>
+     </div>
+    } />
     <Route exact path="/account" render= {props =>
-    <div className="App">
+      <div className="App">
       <Navbar/>
       <Account/>
-    </div>
-    }></Route>
+      </div>
+    } />
     </PageContext.Provider>
     </Switch>
     </BrowserRouter>
-  );
+  )
 }
 
 export default App;

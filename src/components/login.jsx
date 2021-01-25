@@ -20,7 +20,7 @@ let style = {
         minHeight: "500px",
         maxHeight: "500px",
         minWidth: "360px",
-        maxWidth: "500px",
+        maxWidth: "360px",
         //boxShadow: "2px 2px 2px 0px rgb(70, 70, 70), 5px 5px 6px 0px #000000",
         backgroundColor: "transparent",
         textShadow: "6px 5px 4px #000000",
@@ -74,7 +74,7 @@ const Login = () => {
     let [displayMessage,
         setMessage] = useState("");
     let [signIn,
-        setSignIn] = useState(false);
+        setSignIn] = useState(0);// STATE 0 = SIGNUP // STATE 1 = SIGNIN // STATE 2 = CHANGE PASSWORD
     const [scene, setScene] = useState("Scene not set");
     let signInButton = useRef(0);
     let underlineSignIn = useRef(0);
@@ -87,7 +87,40 @@ const Login = () => {
     let canvas = useRef(0);
     let shield = useRef(0);
     let camera = useRef(0);
-    useEffect(() => { // CHECKS IF USER IS LOGGED IN
+    const [changePassword, setChangePassword] = useState(false);
+    let newPassword = useRef(0);
+    let repeatNewPassword = useRef(0);
+    const [fieldsAreValid, setFieldsAreValid] = useState(0);
+    const[logChecker, setLogChecker] = useState(false); //SENDS POST REQUEST ONCE SO THAT WHEN 
+    //CONTENT IS RE RENDERED THE FUNCTION DOESNT KEEP SENDING REQUESTS TO THE SERVER
+
+
+    let validatorEmail = (value)=>{
+        const validEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if(validEmail.test(value)){
+            setFieldsAreValid(true);
+            setMessage("");
+        }
+        else{
+            setFieldsAreValid(false);
+            setMessage("Wrong username/password");
+        }
+    }
+    let validatorPassword = (value)=>{
+        const validPassword = /^(?=.*[A-Z])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
+        if(validPassword.test(value)){
+            setFieldsAreValid(true);
+            setMessage("");
+        }
+        else{
+            setFieldsAreValid(false);
+            setMessage("Password must be of at least 8 characters, including digits and one upper case letter");
+        }
+       
+    }
+
+    let checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
+        if(logChecker === false){
         axios.post('http://localhost:8080/account', {
             authorization: localStorage.getItem('user')
         }, {
@@ -101,15 +134,21 @@ const Login = () => {
                 .location
                 .replace("http://localhost:3000");
         }).catch(error => {
-            console.log(error)
+            setLogChecker(true);
         })
-    }, []);
+    }
+    };
+    checkIfYouAreLogged();
     async function signUp() {
+        if(fieldsAreValid === true){
         loadingAnimation.current.style.display = "grid";
         loginForm.current.style.filter = "blur(2px)";
+        loginForm.current.style.pointerEvents = "none";
+        let date = new Date();
         axios.post('http://localhost:8080/signup', {
             username: input.current.value,
-            password: password.current.value
+            password: password.current.value,
+            date: `${date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate()}`
         }, {
             headers: {
                 // Overwrite Axios's automatically set Content-Type
@@ -119,20 +158,24 @@ const Login = () => {
             setTimeout(()=>{
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
+            loginForm.current.style.pointerEvents = "auto";
             setMessage(res.data);
-            setSignIn(true);
+            setSignIn(1);
             }, 2000)
         }).catch(error => {
             setTimeout(()=>{
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
+            loginForm.current.style.pointerEvents = "auto";
             setMessage(error.response.data.message);
             }, 2000);
         })
     }
+    }
     async function login() {
         loadingAnimation.current.style.display = "grid";
         loginForm.current.style.filter = "blur(2px)";
+        loginForm.current.style.pointerEvents = "none";
         axios.post('http://localhost:8080/signin', {
             username: input.current.value,
             password: password.current.value
@@ -147,6 +190,7 @@ const Login = () => {
             setTimeout(()=>{
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
+            loginForm.current.style.pointerEvents = "auto";
             let [user,
                 token] = JSON
                 .stringify(res.data)
@@ -161,10 +205,56 @@ const Login = () => {
             setTimeout(()=>{
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
+            loginForm.current.style.pointerEvents = "auto";
             console.log(error)
             }, 2000);
             //setMessage(error.response.data.message);
         })
+    }
+    async function changeYourPassword() {
+        if(newPassword.current.value === repeatNewPassword.current.value){
+        loadingAnimation.current.style.display = "grid";
+        loginForm.current.style.filter = "blur(2px)";
+        loginForm.current.style.pointerEvents = "none";
+        axios.post('http://localhost:8080/changepassword', {
+            username: input.current.value,
+            password: password.current.value,
+            newPassword: newPassword.current.value 
+        }, {
+            headers: {
+                // Overwrite Axios's automatically set Content-Type
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            console.log(res);
+            //GET USERNAME AND TOKEN, USERNAME IN ONE AND TOKEN IN SECOND
+            setTimeout(()=>{
+            loadingAnimation.current.style.display = "none";
+            loginForm.current.style.filter = "blur(0px)";
+            loginForm.current.style.pointerEvents = "auto";
+            let [user,
+                token] = JSON
+                .stringify(res.data)
+                .split("/n");
+            localStorage.setItem('user', token.slice(0, -1));
+            setMessage("Login succesful!");
+            window
+                .location
+                .replace("http://localhost:3000");
+            }, 2000);
+        }).catch(error => {
+            setTimeout(()=>{
+            loadingAnimation.current.style.display = "none";
+            loginForm.current.style.filter = "blur(0px)";
+            loginForm.current.style.pointerEvents = "auto";
+            console.log(error)
+            }, 2000);
+            //setMessage(error.response.data.message);
+        })
+    }
+    else{
+        setMessage("Frick!, the passwords do not match");
+    }
     }
     // THREEJS BACKGROUND 
     useEffect(()=>{
@@ -278,6 +368,111 @@ const Login = () => {
         shield.current.scene.rotation.x = -(y / 100) * (Math.PI / 180);
     }
 
+    let checkButtons = ()=>{
+        if(signIn === 1){
+            return <div
+                    style={style.button}
+                    onClick={() => login()}
+                    onMouseEnter={() => {
+                    underlineSignIn.current.style.transform = "scaleX(1)";
+                }}
+                    onMouseLeave={() => {
+                    underlineSignIn.current.style.transform = "scaleX(0)";
+                }}>
+                    <h2
+                        style={{
+                        flex: '1',
+                        cursor: 'pointer',
+                        transition: "0.5s ease-in-out",
+                        textShadow: "6px 5px 4px #000000",
+                        overflow: "visible",
+                        textAlign: "center",
+                        margin: "0"
+                    }}
+                        ref={signInButton}>Sign in</h2>
+                    <div
+                        style={{
+                        height: "2px",
+                        position: "relative",
+                        width: "80%",
+                        left: "10%",
+                        background: "black",
+                        transform: "scaleX(0)",
+                        transition: "all 0.3s ease-out"
+                    }}
+                        ref={underlineSignIn}></div>
+                </div>
+            }
+            else if(signIn === 0){
+            return <div
+                style={style.button}
+                onClick={() => signUp()}
+                onMouseEnter={() => {
+                underlineSignUp.current.style.transform = "scaleX(1)";
+            }}
+                onMouseLeave={() => {
+                underlineSignUp.current.style.transform = "scaleX(0)";
+            }}>
+                <h2
+                    style={{
+                    flex: '1',
+                    cursor: 'pointer',
+                    transition: "0.5s ease-in-out",
+                    textShadow: "6px 5px 4px #000000",
+                    overflow: "visible",
+                    textAlign: "center",
+                    margin: "0"
+                }}
+                    ref={signUpButton}>Sign up</h2>
+                <div
+                    style={{
+                    height: "2px",
+                    position: "relative",
+                    width: "80%",
+                    left: "10%",
+                    background: "black",
+                    transform: "scaleX(0)",
+                    transition: "all 0.3s ease-out"
+                }}
+                    ref={underlineSignUp}></div>
+            </div>
+            }
+            else if(signIn === 2){
+            return <div
+                style={style.button}
+                onClick={() => changeYourPassword()}
+                onMouseEnter={() => {
+                underlineSignUp.current.style.transform = "scaleX(1)";
+            }}
+                onMouseLeave={() => {
+                underlineSignUp.current.style.transform = "scaleX(0)";
+            }}>
+                <h2
+                    style={{
+                    flex: '1',
+                    cursor: 'pointer',
+                    transition: "0.5s ease-in-out",
+                    textShadow: "6px 5px 4px #000000",
+                    overflow: "visible",
+                    textAlign: "center",
+                    margin: "0"
+                }}
+                    ref={signUpButton}>Submit</h2>
+                <div
+                    style={{
+                    height: "2px",
+                    position: "relative",
+                    width: "80%",
+                    left: "10%",
+                    background: "black",
+                    transform: "scaleX(0)",
+                    transition: "all 0.3s ease-out"
+                }}
+                    ref={underlineSignUp}></div>
+            </div>
+            }
+    }
+
     return (
         <div style={style.backgroundLogin}>
             <div style={style.canvas} onMouseMove={(e)=>mouseMove(e)} ref={canvas}></div>
@@ -296,6 +491,7 @@ const Login = () => {
                     }}>Email</div>
                     <input
                         ref={input}
+                        onChange={(e)=>validatorEmail(e.currentTarget.value)}
                         type="email"
                         autoComplete="email"
                         spellCheck="false"
@@ -316,6 +512,49 @@ const Login = () => {
                     }}>Password</div>
                     <input
                         ref={password}
+                        onChange={(e)=>validatorPassword(e.currentTarget.value)}
+                        type="password"
+                        autoComplete="current-password"
+                        spellCheck="false"
+                        autoCapitalize="none"
+                        style={{
+                        paddingLeft: "2%",
+                        paddingRight: "2%",
+                        height: "50%",
+                        width: "94%",
+                        border: "none",
+                        margin: "1%",
+                        boxShadow: "2px 2px 2px 0px rgb(70, 70, 70), 5px 5px 6px 0px #000000"
+                    }}></input>
+                </div>
+                <div style={changePassword ? {display: ""} : {display: "none"}}>
+                    <div style={{
+                        fontWeight: "bold"
+                    }}>New password</div>
+                    <input
+                        ref={newPassword}
+                        onChange={(e)=>validatorPassword(e.currentTarget.value)}
+                        type="password"
+                        autoComplete="current-password"
+                        spellCheck="false"
+                        autoCapitalize="none"
+                        style={{
+                        paddingLeft: "2%",
+                        paddingRight: "2%",
+                        height: "50%",
+                        width: "94%",
+                        border: "none",
+                        margin: "1%",
+                        boxShadow: "2px 2px 2px 0px rgb(70, 70, 70), 5px 5px 6px 0px #000000"
+                    }}></input>
+                </div>
+                <div style={changePassword ? {display: ""} : {display: "none"}}>
+                    <div style={{
+                        fontWeight: "bold"
+                    }}>Repeat new password</div>
+                    <input
+                        ref={repeatNewPassword}
+                        onChange={(e)=>validatorPassword(e.currentTarget.value)}
                         type="password"
                         autoComplete="current-password"
                         spellCheck="false"
@@ -334,79 +573,32 @@ const Login = () => {
                     style={{
                     display: "grid",
                     alignItems: "center"
-                }}>
-                    {signIn
-                        ? <div
-                                style={style.button}
-                                onClick={() => login()}
-                                onMouseEnter={() => {
-                                underlineSignIn.current.style.transform = "scaleX(1)";
-                            }}
-                                onMouseLeave={() => {
-                                underlineSignIn.current.style.transform = "scaleX(0)";
-                            }}>
-                                <h2
-                                    style={{
-                                    flex: '1',
-                                    cursor: 'pointer',
-                                    transition: "0.5s ease-in-out",
-                                    textShadow: "6px 5px 4px #000000",
-                                    overflow: "visible",
-                                    textAlign: "center",
-                                    margin: "0"
-                                }}
-                                    ref={signInButton}>Sign in</h2>
-                                <div
-                                    style={{
-                                    height: "2px",
-                                    position: "relative",
-                                    width: "80%",
-                                    left: "10%",
-                                    background: "black",
-                                    transform: "scaleX(0)",
-                                    transition: "all 0.3s ease-out"
-                                }}
-                                    ref={underlineSignIn}></div>
-                            </div>
-                        : <div
-                            style={style.button}
-                            onClick={() => signUp()}
-                            onMouseEnter={() => {
-                            underlineSignUp.current.style.transform = "scaleX(1)";
-                        }}
-                            onMouseLeave={() => {
-                            underlineSignUp.current.style.transform = "scaleX(0)";
-                        }}>
-                            <h2
-                                style={{
-                                flex: '1',
-                                cursor: 'pointer',
-                                transition: "0.5s ease-in-out",
-                                textShadow: "6px 5px 4px #000000",
-                                overflow: "visible",
-                                textAlign: "center",
-                                margin: "0"
-                            }}
-                                ref={signUpButton}>Sign up</h2>
-                            <div
-                                style={{
-                                height: "2px",
-                                position: "relative",
-                                width: "80%",
-                                left: "10%",
-                                background: "black",
-                                transform: "scaleX(0)",
-                                transition: "all 0.3s ease-out"
-                            }}
-                                ref={underlineSignUp}></div>
-                        </div>}
+                }}> {checkButtons()/*CHECKS IF SIGN IN; SIGN UP OR SUBMIT IS DISPLAYED*/}
                 </div>
                 <div
                     style={{
                     height: "20px",
                     margin: "2%",
                     textAlign: "center"
-                }}>{displayMessage}</div>
+                }}>{displayMessage /*LOGIN MESSAGES, SUCCESFUL OR NOT*/}</div>
+                <div style={{textDecoration: "underline", cursor: "default", display: "grid", justifyContent: "left", alignContent: "start"}}>
+                    <h3 style={{margin: "0", fontSize: "100%", cursor: "pointer"}} onClick={()=>{
+                    if(changePassword === false){
+                    loadingAnimation.current.style.display = "grid";
+                    loginForm.current.style.pointerEvents = "none";
+                    loginForm.current.style.filter = "blur(2px)";
+                    newPassword.current.value = "";
+                    repeatNewPassword.current.value = "";
+                    setTimeout(()=>{
+                        loadingAnimation.current.style.display = "none";
+                        loginForm.current.style.pointerEvents = "auto";
+                        loginForm.current.style.filter = "blur(0px)";
+                        setChangePassword(true);
+                        setSignIn(2);
+                    }, 1000)
+                }
+                }}>{signIn ? "Change password" : ""}</h3>
+                    </div>
                 <div
                     style={{
                     margin: "2%",
@@ -416,9 +608,22 @@ const Login = () => {
                         : "If you already have an account login here:"}</div>
                 <div
                     style={style.button}
-                    onClick={() => signIn
-                    ? setSignIn(false)
-                    : setSignIn(true)}
+                    onClick={() =>{
+                        switch(signIn){
+                            case 0:
+                                setSignIn(1);
+                                break;
+                            case 1:
+                                setSignIn(0);
+                                setChangePassword(false);
+                                break;
+                            case 2: 
+                                setSignIn(0);
+                                setChangePassword(false);
+                                break;
+                            default:
+                        }
+                    }}
                     onMouseEnter={() => {
                     underlineSwitch.current.style.transform = "scaleX(1)";
                 }}

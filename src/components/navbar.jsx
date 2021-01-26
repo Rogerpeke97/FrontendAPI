@@ -8,7 +8,8 @@ import {
   } from "react-router-dom";
   import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-  import { faChild, faDiagnoses, faTrophy, faSignOutAlt, faHome } from '@fortawesome/free-solid-svg-icons'
+  import { faChild, faDiagnoses, faTrophy, faSignOutAlt, faHome,  } from '@fortawesome/free-solid-svg-icons'
+
 let style = {
     navbar: {
         position: "fixed",

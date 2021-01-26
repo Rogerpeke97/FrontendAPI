@@ -2,10 +2,12 @@ import {useRef, useState, useEffect} from 'react'
 import '../App.css';
 import * as THREE from "three";
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { SimplifyModifier } from 'three/examples/jsm/modifiers/SimplifyModifier.js';
 import {Link} from "react-router-dom";
 import {Lensflare, LensflareElement} from 'three/examples/jsm/objects/Lensflare.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faGithub} from '@fortawesome/free-brands-svg-icons'
+import { faWindowClose, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 
 
 
@@ -14,10 +16,10 @@ const OrbitControls = require('three-orbit-controls')(THREE);
 let style = {
     container: {
         backgroundColor: 'transparent',
-        position: 'absolute',
+        position: 'relative',
         top: "6.5rem",
-        minHeight: '100vh',
-        maxHeight: '100vh',
+        minHeight: '100%',
+        maxHeight: '100%',
         minWidth: '100%',
         maxWidth: '100%'
     },
@@ -40,52 +42,66 @@ let style = {
         position: 'fixed',
         minHeight: '100vh',
         minWidth: '1920px',
+        zIndex: "2",
         maxWidth: '1920px',
-        maxHeight: "100vh"
     },
     explanationBox: {
-        display: "none",
-        backgroundColor: "rgb(80, 100, 40)",
+        display: "grid",
+        backgroundColor: "black",
         width: "70%",
-        height: "100vh",
+        opacity: "0.8",
+        zIndex: "2",
+        minHeight: "100vh",
         left: "15%",
         position: "relative",
-        boxShadow: "0 10px 20px gray, 0 6px 6px gray"
+        boxShadow: "0 10px 20px gray, 0 6px 6px gray",
+        transition: "all 0.5s ease-out"
     },
     footer: {
         backgroundColor: "rgb(32, 30, 29)",
         color: 'white',
+        zIndex: "2",
         display: 'flex',
         height: '10rem',
         position: "relative",
         width: "100%",
-        top: "250vh"
     },
     playButton: {
         textDecoration: "none",
         color: "white",
-        backgroundColor: "red",
+        background: "black",
+        fontWeight: "bold",
         width: "20%",
-        height: "10%",
+        height: "4rem",
+        zIndex: "2",
+        marginBottom: "5%",
+        marginTop: "5%",
+        left:"40%",
+        boxShadow: "0px 7px 11px 0px rgba(50, 50, 50, 0.75)",
         position: "relative",
-        top: "80%",
         display: "flex",
-        left: "40%"
     }
 }
 
 const HomeScreen = () => {
     const canvas = useRef(0);
     let switcher = useRef(0);
+    let camera = useRef(0);
     let mixer = useRef(0);
     let angleSphereForgrass = useRef(0);
     let grassRotationAngle = useRef(0);
     const [componentLoaded,
         setComponentLoaded] = useState(false);
-    let knight = useRef(0);
     let loadingScreenMessages = useRef(0);
     let percentage = useRef(0);
     let fadeScreen = useRef(0);
+    const [showExplainBox, setShowExplainBox] = useState(true);
+    let explainBox = useRef(0);
+    let youtubeVideo = useRef(0);
+    let titleYoutube = useRef(0);
+    let bar1 = useRef(0);
+    let bar2 = useRef(0);
+    let bar3 = useRef(0);
     useEffect(() => {
         if(componentLoaded === false){
         let height = canvas.current.clientHeight
@@ -93,21 +109,15 @@ const HomeScreen = () => {
         let manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
-        const camera = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
+        camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
         const renderer = new THREE.WebGLRenderer();
         camera
-            .position
+            .current.position
             .set(9, -0.5, -7);
         camera
-            .rotation.y = 2.3;
+        .current.rotation.y = 2.3;
         camera
-            .rotation.x = -0.1;
-        let controls = new OrbitControls(camera, renderer.domElement);
-        console.log(controls);
-
-        controls
-            .target
-            .set(0, 0, -2);
+        .current.rotation.x = -0.1;
 
         //DIRECTIONAL LIGHT
         const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
@@ -151,13 +161,13 @@ const HomeScreen = () => {
                 width = canvas.current.clientWidth
                 height = canvas.current.clientHeight
                 renderer.setSize(width, height);
-                camera.aspect = width / height;
-                camera.updateProjectionMatrix();
+                camera.current.aspect = width / height;
+                camera.current.updateProjectionMatrix();
             }
         });
 
         //// PARTICLES
-        let particleCount = 2000
+        let particleCount = 1000
         let particleDistance = 53;
         let particles = new THREE.Geometry();
         let texture = new THREE
@@ -193,29 +203,21 @@ const HomeScreen = () => {
                     }
                     particleSys.geometry.verticesNeedUpdate = true;
                 })
-            renderer.render(scene, camera)
+            renderer.render(scene, camera.current)
         })
         scene.add(particleSys)
-        // CHARACTER ADDON FOR MAIN MENU
+        /*// CHARACTER ADDON FOR MAIN MENU
         const loader = new GLTFLoader(manager)
         loader.load("knight.gltf", function (object) {
             object.scene.position.x = 0;
             object.scene.position.y = -2;
             object.scene.position.z = -2;
-            object
-                .scene
-                .scale
-                .set(1.2, 1.2, 1.2)
-            knight.current = object;
-            mixer.current = new THREE.AnimationMixer(knight.current.scene);
-            let action = mixer.current.clipAction(knight.current.animations[15]);
+            mixer.current = new THREE.AnimationMixer(object.scene);
+            let action = mixer.current.clipAction(object.animations[15]);
             action.play();
-            action.loop = THREE.LoopRepeat;
-            action.clampWhenFinished = true;
-            scene.add(knight.current.scene);
-            console.log(knight.current.scene)
+            scene.add(object.scene);
             switcher.current = 1;
-        },);
+        },);*/
         // setTimeout(()=>mixer.clipAction(obj.animations[1]).play(), 8000)// WORKS
         // TRYING A SPHERE
         let floorTexture = new THREE
@@ -237,7 +239,7 @@ const HomeScreen = () => {
                     .set(2, 2);
             });
         let geometrySphere = new THREE.SphereGeometry(7, 25, 25);
-        let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.01});
+        let materialSphere = new THREE.MeshLambertMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.01});
         let sphere = new THREE.Mesh(geometrySphere, materialSphere);
         sphere.position.x = 0;
         sphere.position.y = -9;
@@ -249,28 +251,25 @@ const HomeScreen = () => {
             .load("/textures/skyBackgroundCropped.jpeg");
         textu.minFilter = THREE.LinearFilter;
         scene.background = textu;
-        //TREE
+        /*//TREE
         const treeLoader = new GLTFLoader(manager);
         treeLoader.load('mytree.glb', (tree) => {
-
             tree.scene.position.x = 0;
             tree.scene.position.y = -2.1;
             tree.scene.position.z = -3.2;
             tree.scene.rotation.x = -0.2;
-            tree
-                .scene
-                .scale
-                .set(0.8, 0.8, 0.8);
+            tree.scene
+            .scale.set(0.5, 0.5, 0.5);
             scene.add(tree.scene);
-        })
+        })*/
 
-        //GRASS
+        /*/GRASS
         //USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
         const grassLoader = new GLTFLoader(manager);
-        for(let i = 0; i < 18; i++){
+        for(let i = 0; i < 10; i++){
         grassLoader.load('grassColor.glb', (grass) => {
-            grass.scene.position.x = Math.floor(Math.random() * 8) -3.5 ; //RANDOM NUMBER BETWEEN -7 AND 7
-
+            grass.scene.position.x = Math.floor(Math.random() * 3) -0.5 ; //RANDOM NUMBER BETWEEN -7 AND 7
+            grass.scene.scale.set(0.14, 0.14, 0.14)
             let zRotationNewRadius = Math.sqrt(49 - (grass.scene.position.x * grass.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
             let treeRotationZ = Math.asin(grass.scene.position.x / 7); //SPHERE RADIUS = 7
             let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
@@ -282,17 +281,11 @@ const HomeScreen = () => {
 
             let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
             grass.scene.position.y = grassPositionY - 9;
-
-            //mixer.current = new THREE.AnimationMixer(obj.current.scene);
-            console.log(grass.scene);
-            /*let action = mixer.current.clipAction(obj.current.animations[15]);
-            action.play()
-            action.clampWhenFinished = true;*/
             scene.add(grass.scene);
             angleSphereForgrass.current+=0.001;
             grassRotationAngle.current-=0.001;
         })
-    }
+    }*/
 
         renderer.setSize(width, height)
         canvas
@@ -305,7 +298,7 @@ const HomeScreen = () => {
                     .current
                     .update(delta)
             }
-            renderer.render(scene, camera)
+            renderer.render(scene, camera.current)
             window.requestAnimationFrame(animate);
         }
         animate()
@@ -321,31 +314,48 @@ const HomeScreen = () => {
             "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
              ]
         manager.onProgress = ()=>{
-                if(parseInt(percentage.current.innerText.slice(0, -2)) < 80){
+                if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
                 loadingScreenMessages.current.innerText =  array[Math.floor(Math.random() * array.length)];
                 percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
                 }
+                else{
+                    percentage.current.innerText = "100%";
+                }
         }
             manager.onLoad = ()=>{
-                setInterval(()=>{
-                    if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
-                        percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
-                        loadingScreenMessages.current.innerText =  array[Math.floor(Math.random() * array.length)];
-                    }
-                    else if(parseInt(percentage.current.innerText.slice(0, -2)) === 100){
-                        percentage.current.innerText = "100%";
+                percentage.current.innerText = "100%";
                         fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
-                        setTimeout(()=>setComponentLoaded(true),200);
-                    }
-                }, 200);
+                        fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
             }
     }
-    })
+})
+     //TRACK MOUSE MOVEMENT AND ROTATE camera
+            let mouseMove = (e)=>{
+                let mousex = (e.clientX   - ( canvas.current.getBoundingClientRect().left / 2)) ;
+                let mousey = (e.clientY  - ( canvas.current.getBoundingClientRect().top / 2)) ;
+                let x = mousex - canvas.current.getBoundingClientRect().width / 2 ;
+                let y = canvas.current.getBoundingClientRect().height / 2 - mousey ;
+                camera.current.rotation.y = (x / 1000) * (Math.PI / 180) + 2.3;
+                camera.current.rotation.x = -(y / 1000) * (Math.PI / 180) - 0.1;
+            }
+
+            let addMusicAnimation = ()=>{
+                if(bar1.current.style.animation === ""){
+                bar1.current.style.animation = "increaseHeightBar1 1.5s linear infinite"
+                bar2.current.style.animation = "increaseHeightBar1 1s linear infinite"
+                bar3.current.style.animation = "increaseHeightBar1 0.75s linear infinite"
+                }
+                else{
+                bar1.current.style.animation = ""
+                bar2.current.style.animation = ""
+                bar3.current.style.animation = ""                   
+                }
+            }
 
     return (
         <div>
-            <div ref={canvas} style={style.canvas}></div>
-            <div style={style.container}>
+            <div ref={canvas} style={style.canvas} onMouseMove={(e)=>mouseMove(e)}></div>
+            <div style={style.container} onMouseMove={(e)=>mouseMove(e)}>
                 <div className="title" style={style.title}>
                     <span
                         style={{
@@ -397,8 +407,46 @@ const HomeScreen = () => {
                     }}>e</span>
                 </div>
                 <div style={style.howToPlay}>How to play:</div>
-                <div style={style.explanationBox}>
+                <div className= "helpToExplainBox" style={{display:"grid", position: "fixed", height: "5%", width:"5%", left: "95%", top:"95%", zIndex: "4"}}>
+                    <FontAwesomeIcon className= "help" icon={faQuestionCircle} style={{cursor: "pointer", width:"100%",fontSize: "200%", transition: "all 0.5s ease-out", color: "white"}} 
+                    onClick={()=>{
+                        if(showExplainBox === false){
+                        setShowExplainBox(true);
+                        explainBox.current.style.animation = "popExplainBox 1s normal forwards ease-out"; 
+                        explainBox.current.onanimationend = ()=>{
+                            explainBox.current.style.animation = "none";
+                        };
+                    }
+                    }}/>
+                </div>
+                <div className= "musicPlayer" style={{display:"flex", position: "fixed", height: "50px", width:"4%", left: "95%", top:"75%", zIndex: "4", background: "transparent", borderRadius: "50%", transform: "rotate3d(0, 0, 1, 180deg)"}} onClick={()=>{
+                    let audio = document.getElementById('audio');
+                    addMusicAnimation();
+                    if (audio.duration > 0 && !audio.paused) {
+                        audio.pause();
+                        //Its playing...do your job
+                    } else {
+                        audio.play();
+                        //Not playing...maybe paused, stopped or never played.   
+                    }
+                }}>
+                    <div ref={bar1} style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div>
+                    <div ref={bar2}style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div>
+                    <div ref={bar3}style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div> 
+                </div>
+                <audio src="finalFantasy.mp3" id="audio" loop></audio>
+                <div ref={explainBox} style={showExplainBox ? style.explanationBox : {visibility: "hidden"}}>
                     <div>
+                        <div style={{display: "grid", justifyContent: "right", alignContent: "center"}}>
+                        <FontAwesomeIcon className="windowClose" icon={faWindowClose} style={{cursor: "pointer", fontSize: "250%", color: "white", transition: "all 0.5s ease-out", minWidth: "100%", maxWidth: "100%", textShadow: "0px 7px 10px rgba(150, 150, 150, 1)"}}
+                        onClick={()=>{
+                            explainBox.current.style.animation = "fadeExplainBox 1s normal forwards ease-out";
+                            explainBox.current.onanimationend = ()=>{
+                                explainBox.current.style.animation = "none";
+                                setShowExplainBox(false)
+                            };
+                            }}/>
+                        </div>
                         <div
                             style={{
                             textAlign: "left",
@@ -421,13 +469,13 @@ const HomeScreen = () => {
                                     color: "white",
                                     cursor: "default",
                                 }}>
-                                <FontAwesomeIcon icon={faGithub} style={{cursor: "pointer", fontSize: "200%"}} />
+                                <FontAwesomeIcon className= "github" icon={faGithub} style={{cursor: "pointer", fontSize: "200%", transition: "all 0.5s ease-out"}} />
                                 </a>
                             </div> <br></br>
                             <div style={{maxHeight: "100%", maxWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%"}}>
-                                <img src="/explanationImages/tree.jpg" alt="blendertree" style={{maxHeight: "90%", maxWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}}></img>
-                                <div style={{textAlign: "left"}}>
-                                    Tree model exported from blender.
+                                <img src="/explanationImages/tree.jpg" alt="blendertree" style={{maxHeight: "100%", maxWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}}></img>
+                                <div style={{textAlign: "left", marginTop: "1%", color: "darkgray", fontWeight: "100"}}>
+                                    Tree model exported from blender where hair particles were turned into tree branch meshes.
                                 </div>
                             </div>
                             The knight model was downloaded from cg trader, which i will replace soon by a
@@ -435,15 +483,22 @@ const HomeScreen = () => {
                             three.js, you have to be aware that particles systems cannot be exported from
                             blender, therefore you should convert them to mesh and then export the file.<br></br> I'm
                             saying this in case you want to work on top of the models that i left on my
-                            repo. The game is pretty basic, had to implement a bit of math for the
-                            character's movement around the radius of the sphere and how depending at which
-                            value along the X axis the character is the Y position of the character varies.
-                            The way the collision system works if you could call it that is it checks the
+                            repo. <br></br> The game is pretty basic, i had to implement a bit of math for the
+                            character's movement around the radius of the sphere and how, depending at which
+                            value along the X axis the character is, the Y position of the character varies.
+                            The way the collision system works, if you could call it that, is, it checks the
                             position values of the tree and the character. If you get too close to the tree
-                            then, a collision is detected and you lose one life.
+                            then, a collision is detected and you lose one life.<br></br>
+                            In case you are browsing on mobile, you can check this video showing the gameplay, i would like to port it in
+                            the future to mobile with react native as a fun project, in the meantime you can watch it or grab your computer
+                            and play around!.
+                            <div style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%",  marginTop: "5%"}}>
+                            <iframe ref={youtubeVideo} style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}} title= "game video" src="https://youtube.com/embed/playlist?list=PL9DADCB4F409084A4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
                         </div>
                     </div>
-                    <div style={style.playButton}>
+                </div>
+                <div style={style.playButton}>
                         <Link
                             to="/game"
                             style={{
@@ -456,16 +511,14 @@ const HomeScreen = () => {
                             alignItems: "center"
                         }}>Play</Link>
                     </div>
-                </div>
-            </div>
-            <div style={style.footer}>
+                <div style={style.footer}>
                 <div></div>
+            </div>
             </div>
             <div
                 className="loadingScreen"
                 ref={fadeScreen}
-                style={/*componentLoaded ? */
-            {display: "none"}/*: {display: "grid"}*/}>
+                style={componentLoaded ? {display: "none"}: {display: "grid"}}>
                 <div>
                     <span>L</span>
                     <span>O</span>

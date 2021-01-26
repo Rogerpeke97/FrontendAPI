@@ -54,7 +54,7 @@ const Game = () => {
             let height = canvas.current.clientHeight
             let width = canvas.current.clientWidth
             const scene = new THREE.Scene();
-            //scene.fog = new THREE.FogExp2(0xDCDBDF, 0.16);
+            scene.fog = new THREE.FogExp2(0xDCDBDF, 0.16);
             //scene.add(helper) ONLY FOR DEBUGGING
             camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
             const renderer = new THREE.WebGLRenderer();
@@ -76,12 +76,9 @@ const Game = () => {
             let clock = new THREE.Clock();
             const intensity = 0.4;
             //BACKGROUND LIGHT
-            const light1 = new THREE.DirectionalLight(color, intensity);
-            light1
-                .position
-                .set(0, 4, -1);
             const textureFlare = new THREE.TextureLoader(manager);
             const textureFlare0 = textureFlare.load( 'lensflare0.png' );
+            const textureFlareMoon = textureFlare.load( 'lensflareMoon.png' );
 			const textureFlare3 = textureFlare.load( 'lensflare3.png' );
             addLight( 0.55, 0.9, 0.5, 5000, 0, - 1000 );
             addLight( 0.08, 0.8, 0.5, 0, 0, - 1000 );
@@ -102,12 +99,34 @@ const Game = () => {
                 lensflare.addElement( new LensflareElement( textureFlare3, 70, 1 ) );
                 light.add( lensflare );
             }
-            scene.add(light1);
-            const light2 = new THREE.DirectionalLight(colorMoon, intensity);
-            light2
-                .position
-                .set(0, -5, -1);
-            scene.add(light2);
+            //MOON
+            const moonLoader = new GLTFLoader(manager)
+            moonLoader.load("moon.glb", function (object) {
+                object.scene.position.x = 0;
+                object.scene.position.y = -20; // CIRCLE RADIUS
+                object.scene.position.z = 10;
+                scene.add(object.scene)
+                addLight2( 176, 100, 99, 5000, 0, - 1000 );
+                addLight2( 176, 100, 99, 0, -150, 150 );
+                addLight2( 176, 100, 99, 5000, 5000, - 1000 );
+    
+                function addLight2( h, s, l, x, y, z ) {
+    
+                    const light2 = new THREE.PointLight( 0xffffff, 1.5, 2000 );
+                    light2.color.setHSL( h, s, l );
+                    light2.position.set( x, y, z );
+                    object.scene.add( light2 );
+    
+                    const lensflare = new Lensflare();
+                    lensflare.addElement( new LensflareElement( textureFlareMoon, 200, 0, light2.color ) );
+                    lensflare.addElement( new LensflareElement( textureFlare3, 60, 0.6 ) );
+                    lensflare.addElement( new LensflareElement( textureFlare3, 70, 0.7 ) );
+                    lensflare.addElement( new LensflareElement( textureFlare3, 120, 0.9 ) );
+                    lensflare.addElement( new LensflareElement( textureFlare3, 70, 1 ) );
+                    light2.add( lensflare );
+                }
+    
+            })
             window.addEventListener('resize', () => {
                 if (canvas.current !== null) {
                     width = canvas.current.clientWidth
@@ -164,10 +183,10 @@ const Game = () => {
 
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
             const grassLoader = new GLTFLoader(manager);
-            for (let i = 0; i < 25; i++) {
+            for (let i = 0; i < 15; i++) {
                 grassLoader.load('grassColor.glb', (grass) => {
-                    grass.scene.position.x = Math.floor(Math.random() * 5) - 2; //RANDOM NUMBER BETWEEN -7 AND 7
-
+                    grass.scene.scale.set(0.3, 0.3, 0.3);
+                    grass.scene.position.x = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
                     let zRotationNewRadius = Math.sqrt(49 - (grass.scene.position.x * grass.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
                     let treeRotationZ = Math.asin(grass.scene.position.x / 7); //SPHERE RADIUS = 7
                     let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
@@ -180,7 +199,7 @@ const Game = () => {
                     let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
                     grass.scene.position.y = grassPositionY;
                     scene.add(grass.scene);
-                    angleSphereForgrass.current += 0.09;
+                    angleSphereForgrass.current = angleSphereForgrass.current + 0.00813333333;
                 })
             }
 
@@ -240,7 +259,6 @@ const Game = () => {
             // RUNANIMATION IT IS ALWAYS THE SAME BUT OPTICALLY IT ISNT DUE TO PERSPECTIVE
             let runAndAnimation = () => {
                     let armorMan = obj.current.scene;
-
                     if (circleAngle.current > 0.11) { // RESETS THE NUMBER OTHERWISE IT WILL KEEP COUNTING FOREVER ALTHOUGH IT DOESNT AFFECT THE CIRCULAR MOTION DUE TO COS()
                         console.log("reset");
                         circleAngle.current = 0.0001;
@@ -536,7 +554,7 @@ const Game = () => {
             sphere.position.x = 0;
             sphere.position.y = 0;
             sphere.position.z = 0;
-            sphere.rotation.x = 1;
+            sphere.rotation.x = 2;
             scene.add(sphere);
 
             const animate = () => {

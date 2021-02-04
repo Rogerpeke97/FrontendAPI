@@ -544,7 +544,7 @@ const HomeScreen = () => {
                             the future to mobile with react native as a fun project, in the meantime you can watch it or grab your computer
                             and play around!.
                             <div style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%",  marginTop: "5%"}}>
-                            <iframe ref={youtubeVideo} style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}} title= "game video" src="https://youtu.be/embed/pQOFoHOMXvw" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe ref={youtubeVideo} style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}} title= "game video" src="https://www.youtube.com/embed/pQOFoHOMXvw" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </div>
                             <div style={{maxHeight: "100%", maxWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%"}}>
                                 <img src="gameGif.gif" alt="game gif" style={{maxHeight: "100%", maxWidth: "100%", objectFit: "cover", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}}></img>

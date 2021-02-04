@@ -416,7 +416,7 @@ const Game = () => {
                       .rotation
                       .set(-0.0057 - 0.1, 0, 0);
                     angleSphereForTrees.current = [0, 0];
-                    axios.post('http://localhost:8080/uploadscore', { // UPLOADS SCORE
+                    axios.post('https://xentaserver.herokuapp.com/uploadscore', { // UPLOADS SCORE
                         authorization: localStorage.getItem('user'),
                         score: `${scorePoints.current}`
                     }, {

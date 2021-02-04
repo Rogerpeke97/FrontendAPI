@@ -140,7 +140,7 @@ const Login = () => {
 
     let checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
         if(logChecker === false){
-        axios.post('http://localhost:8080/account', {
+        axios.post('https://xentaserver.herokuapp.com/account', {
             authorization: localStorage.getItem('user')
         }, {
             headers: {
@@ -164,7 +164,7 @@ const Login = () => {
         loginForm.current.style.filter = "blur(2px)";
         loginForm.current.style.pointerEvents = "none";
         let date = new Date();
-        axios.post('http://localhost:8080/signup', {
+        axios.post('https://xentaserver.herokuapp.com/signup', {
             username: input.current.value,
             gametag: gametag.current.value,
             password: password.current.value,
@@ -196,7 +196,7 @@ const Login = () => {
         loadingAnimation.current.style.display = "grid";
         loginForm.current.style.filter = "blur(2px)";
         loginForm.current.style.pointerEvents = "none";
-        axios.post('http://localhost:8080/signin', {
+        axios.post('https://xentaserver.herokuapp.com/signin', {
             username: input.current.value,
             password: password.current.value
         }, {
@@ -234,7 +234,7 @@ const Login = () => {
         loadingAnimation.current.style.display = "grid";
         loginForm.current.style.filter = "blur(2px)";
         loginForm.current.style.pointerEvents = "none";
-        axios.post('http://localhost:8080/changepassword', {
+        axios.post('https://xentaserver.herokuapp.com/changepassword', {
             username: input.current.value,
             password: password.current.value,
             newPassword: newPassword.current.value 

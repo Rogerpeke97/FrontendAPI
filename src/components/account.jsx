@@ -50,7 +50,7 @@ const Account = () => {
     const [colorSet, setColorSet] = useState("");
 
     let checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
-        axios.post('http://localhost:8080/accountdetails', {
+        axios.post('https://xentaserver.herokuapp.com/accountdetails', {
             authorization: localStorage.getItem('user')
         }, {
             headers: {
@@ -90,7 +90,7 @@ const Account = () => {
                 }
             })
             .catch(error => {
-            window.location.assign('http://localhost:3000/login')
+            window.location.assign('https://xentaserver.herokuapp.com/login')
             })
     };
     useEffect(()=>{
@@ -160,7 +160,7 @@ const Account = () => {
         },[])
 
         let setAvatarColor = ()=>{
-            axios.post('http://localhost:8080/setcolor', { // UPLOADS SCORE
+            axios.post('https://xentaserver.herokuapp.com/setcolor', { // UPLOADS SCORE
             authorization: localStorage.getItem('user'),
             avatar: `${color.current}`
         }, {

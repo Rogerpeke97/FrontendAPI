@@ -210,7 +210,7 @@ const Navbar = ()=>{
     }
 
     let axiosPost = ()=>{
-        axios.post('http://localhost:8080/account', 
+        axios.post('https://xentaserver.herokuapp.com/account', 
         {authorization: localStorage.getItem('user')},
         {headers: {
             // Overwrite Axios's automatically set Content-Type

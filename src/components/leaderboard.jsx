@@ -67,7 +67,7 @@ let Leaderboard = () => {
     let leaderboard = useRef(0);
     useEffect(() => {
         if (fetchedData === false) {
-            axios.post('http://localhost:8080/leaderboard', { // GETS SCORE
+            axios.post('https://xentaserver.herokuapp.com/leaderboard', { // GETS SCORE
                 authorization: `Bearer ${localStorage.getItem('user')}`
             }, {
                 headers: {

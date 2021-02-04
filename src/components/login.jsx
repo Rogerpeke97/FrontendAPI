@@ -32,7 +32,7 @@ let style = {
         cursor: 'pointer',
         boxShadow: "2px 2px 2px 0px rgb(70, 70, 70), 5px 5px 6px 0px #000000",
         transition: "0.5s ease-in-out",
-        width: "25%",
+        width: "100px",
         height: "30px",
         display: "grid",
         position: "relative",

@@ -39,8 +39,8 @@ const Game = () => {
     let trees = useRef(0);
     let angleSphereForTrees = useRef(0);
     let angleSphereForgrass = useRef(0);
-    let isHeartDead = useRef(0); // each number corresponds to each heart
-    const[health, setHealth] = useState(0);
+    let isHeartDead = useRef(4); // each number corresponds to each heart
+    let health = useRef(0);
     let scorePoints = useRef(0);
     let scoreChecker = useRef(0);
     const [componentLoaded,
@@ -49,12 +49,20 @@ const Game = () => {
     let percentage = useRef(0);
     let fadeScreen = useRef(0);
     let hitWait = useRef(false);
+    let playButton = useRef(0);
+    let musicExplain = useRef(0);
+    let audio = useRef(0);
+    let bar1 = useRef(0);
+    let bar2 = useRef(0);
+    let bar3 = useRef(0);
     useEffect(() => {
         if (componentLoaded === false) {
+            health.current.innerText = `x${isHeartDead.current}`;
+            animationsAdded.current = null;
             let height = canvas.current.clientHeight
             let width = canvas.current.clientWidth
             const scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0xDCDBDF, 0.16);
+            scene.fog = new THREE.FogExp2(0xDCDBDF, 0.10);
             //scene.add(helper) ONLY FOR DEBUGGING
             camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
             const renderer = new THREE.WebGLRenderer();
@@ -71,10 +79,7 @@ const Game = () => {
                 .current
                 .rotation
                 .set(-0.0057 - 0.1, 0, 0);
-            const color = 'yellow';
-            const colorMoon = 'white';
             let clock = new THREE.Clock();
-            const intensity = 0.4;
             //BACKGROUND LIGHT
             const textureFlare = new THREE.TextureLoader(manager);
             const textureFlare0 = textureFlare.load( 'lensflare0.png' );
@@ -100,14 +105,14 @@ const Game = () => {
                 light.add( lensflare );
             }
             //MOON
-            const moonLoader = new GLTFLoader(manager)
+            /*const moonLoader = new GLTFLoader(manager)
             moonLoader.load("moon.glb", function (object) {
                 object.scene.position.x = 0;
-                object.scene.position.y = -20; // CIRCLE RADIUS
-                object.scene.position.z = 10;
+                object.scene.position.y = -90; // CIRCLE RADIUS
+                object.scene.position.z = 6;
                 scene.add(object.scene)
                 addLight2( 176, 100, 99, 5000, 0, - 1000 );
-                addLight2( 176, 100, 99, 0, -150, 150 );
+                addLight2( 176, 100, 99, 0, -1000, 150 );
                 addLight2( 176, 100, 99, 5000, 5000, - 1000 );
     
                 function addLight2( h, s, l, x, y, z ) {
@@ -115,7 +120,7 @@ const Game = () => {
                     const light2 = new THREE.PointLight( 0xffffff, 1.5, 2000 );
                     light2.color.setHSL( h, s, l );
                     light2.position.set( x, y, z );
-                    object.scene.add( light2 );
+                    scene.add( light2 );
     
                     const lensflare = new Lensflare();
                     lensflare.addElement( new LensflareElement( textureFlareMoon, 200, 0, light2.color ) );
@@ -126,10 +131,10 @@ const Game = () => {
                     light2.add( lensflare );
                 }
     
-            })
+            })*/
             window.addEventListener('resize', () => {
                 if (canvas.current !== null) {
-                    width = canvas.current.clientWidth
+                    width = document.documentElement.clientWidth;
                     height = canvas.current.clientHeight
                     renderer.setSize(width, height);
                     camera.current.aspect = width / height;
@@ -154,28 +159,29 @@ const Game = () => {
             const treeLoader = new GLTFLoader(manager);
             for (let j = 0; j <= 15; j++) {
                 treeLoader.load('mytree.glb', (tree) => {
-                    tree.scene.position.x = Math.floor(Math.random() * 5) - 2; //RANDOM NUMBER BETWEEN -7 AND 7
+                    trees
+                    .current
+                    .push(tree);
+                    let newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
                     tree
                         .scene
                         .scale
-                        .set(0.14, 0.14, 0.14);
-                    let zRotationNewRadius = Math.sqrt(49 - (tree.scene.position.x * tree.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        .set(0.1, 0.1, 0.1);
+                    let zRotationNewRadius = Math.sqrt(49 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
                     let z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
-                    tree.scene.position.z = -z
                     // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE
                     // RIGHT ROTATION AND Y POSITION AROUND THE SPHERE TREE ROTATION SIN ANGLE =
                     // OPOSSITE OVER HYPOTHENUSE
-                    let treeRotationZ = Math.asin(tree.scene.position.x / 7); //SPHERE RADIUS = 7
-                    tree.scene.rotation.z = -treeRotationZ;
+                    let treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
+
                     let treeRotationX = -angleSphereForTrees.current * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)
-                    tree.scene.rotation.x = treeRotationX;
 
                     //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
                     let treePositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
-                    tree.scene.position.y = treePositionY;
-                    trees
-                        .current
-                        .push(tree);
+
+                    tree.scene.position.set(newX, treePositionY, -z);
+                    tree.scene.rotation.set(treeRotationX, tree.scene.rotation.y, -treeRotationZ);
+
                     scene.add(tree.scene);
                     angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
                 })
@@ -212,7 +218,7 @@ const Game = () => {
                 object
                     .scene
                     .scale
-                    .set(0.3, 0.3, 0.3)
+                    .set(0.2, 0.2, 0.2)
                 obj.current = object;
                 mixer.current = new THREE.AnimationMixer(obj.current.scene);
 
@@ -225,14 +231,8 @@ const Game = () => {
                 scene.add(object.scene);
 
                 switcher.current = 1;
-                setComponentLoaded(true);
 
-                setTimeout(() => {
-                    let action = mixer
-                        .current
-                        .clipAction(obj.current.animations[14]) // RUN ANIMATION
-                    action.play()
-                    action.clampWhenFinished = true;
+
                 //EVENT LISTENER FOR FINISHED ANIMATION
                     mixer
                       .current
@@ -246,8 +246,6 @@ const Game = () => {
                 mixer
                 .current
                 .clipAction(obj.current.animations[0]); // JUMP ANIMATION
-                    animationsAdded.current = true; // SETS RUNANDANIMATION
-                }, 20000)
             },);
 
             // RUNNING ANIMATION AND MOVEMENT IMPLEMENTING EQUATION IN PARAMETRIC FORM TO
@@ -259,18 +257,10 @@ const Game = () => {
             // RUNANIMATION IT IS ALWAYS THE SAME BUT OPTICALLY IT ISNT DUE TO PERSPECTIVE
             let runAndAnimation = () => {
                     let armorMan = obj.current.scene;
-                    if (circleAngle.current > 0.11) { // RESETS THE NUMBER OTHERWISE IT WILL KEEP COUNTING FOREVER ALTHOUGH IT DOESNT AFFECT THE CIRCULAR MOTION DUE TO COS()
-                        console.log("reset");
-                        circleAngle.current = 0.0001;
-                        cameraAngle.current = -0.005;
-                        angleSphereForTrees.current = [0, 0, 0];
-                        console.log(armorMan.position.x);
-                    }
-                    circleAngle.current = circleAngle.current + 0.0001;
-                    cameraAngle.current = cameraAngle.current + 0.0001;
-                    if(circleAngle.current > angleSphereForTrees.current[2] + 0.00813333333 && trees.current[angleSphereForTrees.current[1]] !== undefined){//anglespherefortrees is the value at which each tree was placed
-                        moveTrees();
-                    }
+
+                    circleAngle.current = circleAngle.current + 0.0003;
+                    cameraAngle.current = cameraAngle.current + 0.0003;
+
                     let xChar = -circleAngle.current * (180 / Math.PI); //The character rotation ON X AXIS (FORWARDS)
 
                     let zRotationNewRadius = Math.sqrt(49 - (knightMovementXAxis.current * knightMovementXAxis.current)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
@@ -280,11 +270,8 @@ const Game = () => {
                     let y = Math.cos(circleAngle.current * (180 / Math.PI)) * zRotationNewRadius;
                     let z = Math.sin(circleAngle.current * (180 / Math.PI)) * zRotationNewRadius;
                     //KNIGHT MOVEMENTS
-                    knightRotationX.current = xChar;
-                    armorMan.position.y = y;
-                    armorMan.rotation.x = xChar;
-                    armorMan.rotation.z = knightRotationZ.current;
-                    armorMan.position.z = -z;
+                    armorMan.position.set(knightMovementXAxis.current, y, -z);
+                    armorMan.rotation.set(xChar, armorMan.rotation.y, knightRotationZ.current);
                     //CAMERA MOVEMENTS
                     let cameraY = Math.cos(cameraAngle.current * (180 / Math.PI)) * 8;
                     let cameraZ = Math.sin(cameraAngle.current * (180 / Math.PI)) * 8;
@@ -299,9 +286,10 @@ const Game = () => {
                         .current
                         .rotation
                         .set(xChar - 0.1, 0, 0);
-                        checkMovements(armorMan);
-                        characterHitByTree(armorMan);
             }
+
+            setInterval(()=>animationsAdded.current === true ? runAndAnimation() : "", 20);
+
 
             let characterHitByTree = (armorMan)=>{
                 trees.current.forEach((tree)=>{
@@ -311,22 +299,24 @@ const Game = () => {
                     let knightPosY = armorMan.position.y;
                     let z = tree.scene.position.z;
                     let knightPosZ = armorMan.position.z;
-                    if((between(knightPosX, x - 0.1, x + 0.1) && between(knightPosY, y - 1, y + 1)) && (between(knightPosZ, z - 0.1, z + 0.1) && hitWait.current === false)){
-                        console.log(knightPosX + " " + knightPosY)
+                    if((between(knightPosX, x - 0.2, x + 0.2) && between(knightPosY, y - 1.00, y + 1.00)) && (between(knightPosZ, z - 0.2, z + 0.2) && hitWait.current === false)){
                         hitCount();
                     }
                 })
+            
             }
+            setInterval(()=>animationsAdded.current === true ? characterHitByTree(obj.current.scene) : "", 20);
+
+
             let hitCount = ()=>{
-                if(hitWait.current === false && isHeartDead.current < 4){
+                if(hitWait.current === false && isHeartDead.current > 0){
                     hitWait.current = true;
-                    console.log(isHeartDead.current);
                     hitAwait();
                 }
             }
             let hitAwait = ()=>{
-                isHeartDead.current = isHeartDead.current + 1;
-                console.log(isHeartDead.current);
+                isHeartDead.current = isHeartDead.current - 1;
+                health.current.innerText = `x${isHeartDead.current}`;
                 setTimeout(()=>{
                     hitWait.current = false
                 }, 1000)
@@ -337,27 +327,27 @@ const Game = () => {
               }
 
             let moveTrees = ()=>{
-                trees.current[angleSphereForTrees.current[1]].scene.position.x = Math.floor(Math.random() * 5) - 2; //RANDOM NUMBER BETWEEN -7 AND 7; //RANDOM NUMBER BETWEEN -7 AND 7
-                let zRotationNewRadius = Math.sqrt(49 - (trees.current[angleSphereForTrees.current[1]].scene.position.x * trees.current[angleSphereForTrees.current[1]].scene.position.x));
-                let z = Math.sin(angleSphereForTrees.current[0] * (180 / Math.PI)) * zRotationNewRadius;
-                trees.current[angleSphereForTrees.current[1]].scene.position.z = -z
-                let treeRotationZ = Math.asin(trees.current[angleSphereForTrees.current[1]].scene.position.x / 7); //SPHERE RADIUS = 7
-                trees.current[angleSphereForTrees.current[1]].scene.rotation.z = -treeRotationZ;
-                let treeRotationX = -angleSphereForTrees.current[0] * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)
-                trees.current[angleSphereForTrees.current[1]].scene.rotation.x = treeRotationX;
-                let treePositionY = Math.cos(angleSphereForTrees.current[0] * (180 / Math.PI)) * zRotationNewRadius;
-                trees.current[angleSphereForTrees.current[1]].scene.position.y = treePositionY;  
-                angleSphereForTrees.current[0] += 0.00813333333;
-                angleSphereForTrees.current[1] += 1;//TREE NUMBER
-                angleSphereForTrees.current[2] += 0.01626666666;//TREE NUMBER                                
+                let calculateTreeAngle = -(trees.current[angleSphereForTrees.current[0]].scene.rotation.x / (180 / Math.PI));// Z POSITIONING STAYS THE SAME
+                let newX = (Math.random() * (1 - (-1)) + (-1));
+                trees.current[angleSphereForTrees.current[0]].scene.position.x = newX;
+                let zRotationNewRadius = Math.sqrt(49 - (newX * newX));
+                let treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
+                trees.current[angleSphereForTrees.current[0]].scene.rotation.z = -treeRotationZ;
+                let treePositionY = Math.cos(calculateTreeAngle * (180 / Math.PI)) * zRotationNewRadius;
+                trees.current[angleSphereForTrees.current[0]].scene.position.y = treePositionY;  
+                angleSphereForTrees.current[0] += 1;//TREE NUMBER
+                angleSphereForTrees.current[1] += 0.01626666666;//TREE NUMBER 
+                if(trees.current[angleSphereForTrees.current[0] + 1] === undefined){
+                    angleSphereForTrees.current[0] = 0;
+                }                               
             }
-
+            setInterval(()=>animationsAdded.current === true ? moveTrees() : "", 1500);
 
             let checkMovements = (armorMan)=>{   
                     //CHARACTER MOVEMENTS KEY EVENTS
-                    if(JSON.stringify(trackedKeys.current) === `{"arrowLeft":true,"arrowRight":false}`){
+                    if(JSON.stringify(trackedKeys.current) === `{"arrowLeft":true,"arrowRight":false}` && knightMovementXAxis.current > -1){
                         centerChar.current = false;
-                        knightMovementXAxis.current = armorMan.position.x - 0.01;
+                        knightMovementXAxis.current = armorMan.position.x - 0.04;
                         armorMan.position.x = knightMovementXAxis.current;
                         //ROTATION
                         if (isRotating.current.isRotatingLeft === "start") { // y = -2.5
@@ -373,9 +363,9 @@ const Game = () => {
                             }
                         }
                     }
-                    else if(JSON.stringify(trackedKeys.current) === `{"arrowLeft":false,"arrowRight":true}`){
+                    else if(JSON.stringify(trackedKeys.current) === `{"arrowLeft":false,"arrowRight":true}` && knightMovementXAxis.current < 1){
                         centerChar.current = false;
-                        knightMovementXAxis.current = armorMan.position.x + 0.01;
+                        knightMovementXAxis.current = armorMan.position.x + 0.04;
                         armorMan.position.x = knightMovementXAxis.current;
                         //ROTATION
                         if (isRotating.current.isRotatingRight === "start") { // y = -3.5
@@ -393,28 +383,39 @@ const Game = () => {
                     }
             }
 
+            setInterval(()=>animationsAdded.current === true ? checkMovements(obj.current.scene) : "", 20);
+
             setInterval(() => {
                 if (animationsAdded.current === true) {
                     scorePoints.current = scorePoints.current + 1;
                     scoreChecker.current.innerText = scorePoints.current;
-                    runAndAnimation();
                 } 
-                if(isHeartDead.current === 4){
+                if(isHeartDead.current === 0 && animationsAdded.current === true){
                     youLost();
                 }
-            }, 5); //ADDS SCORE POINTS
+            }, 50); //ADDS SCORE POINTS
 
             let youLost = () => {
-                    animationsAdded.current = false
+                    isHeartDead.current = 4;
+                    health.current.innerText = `x${isHeartDead.current}`;
                     circleAngle.current = 0.0001;
                     cameraAngle.current = -0.005;
+                    animationsAdded.current = null;
                     obj.current.scene.position.x = 0;
                     obj.current.scene.position.y = 7; // CIRCLE RADIUS
                     obj.current.scene.position.z = 0;
-                    /*camera
-                        .current
-                        .position
-                        .set(0, 8, 2);*/
+                    obj.current.scene.rotation.x = 0;
+                    obj.current.scene.rotation.y = -Math.PI; 
+                    obj.current.scene.rotation.z = 0;
+                    camera
+                    .current
+                    .position
+                    .set(0, 8, 2.1);
+                    camera
+                      .current
+                      .rotation
+                      .set(-0.0057 - 0.1, 0, 0);
+                    angleSphereForTrees.current = [0, 0];
                     axios.post('http://localhost:8080/uploadscore', { // UPLOADS SCORE
                         authorization: localStorage.getItem('user'),
                         score: `${scorePoints.current}`
@@ -425,9 +426,21 @@ const Game = () => {
                             'Authorization': `Bearer ${localStorage.getItem('user')}`
                         }
                     }).then(res => {
-                        console.log(res)
+                        playButton.current.style.visibility = "visible";
+                        playButton.current.style.animation = "popExplainBox 1s normal forwards ease-out";
+                        playButton.current.onanimationend = ()=>{
+                            scorePoints.current = 0;
+                            scoreChecker.current.innerText = scorePoints.current;
+                            playButton.current.style.animation = "";
+                        }
                     }).catch(error => {
-                        console.log(error)
+                        playButton.current.style.visibility = "visible";
+                        playButton.current.style.animation = "popExplainBox 1s normal forwards ease-out";
+                        playButton.current.onanimationend = ()=>{
+                            scorePoints.current = 0;
+                            scoreChecker.current.innerText = scorePoints.current;
+                            playButton.current.style.animation = "";
+                        }
                     })
             }
             // USING INTERVAL SINCE TWEENING WOULD MAKE PERFORMANCE DROP, WILL MOVE
@@ -507,7 +520,8 @@ const Game = () => {
                             y: -3, // FROM -3 TO -3
                         }, 50)
                         .onComplete(() => {
-                            TWEEN.remove(tweenRotateCenter)
+                            TWEEN.remove(tweenRotateCenter);
+                            cancelAnimationFrame(animateTweenRotateCenter);
                             centerChar.current = false;
                         })
                         .start()
@@ -549,12 +563,12 @@ const Game = () => {
                         .set(2, 2);
                 });
             let geometrySphere = new THREE.SphereBufferGeometry(7, 50, 50);
-            let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.01});
+            let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture, bumpMap: floorBump, bumpScale: 0.01});
             let sphere = new THREE.Mesh(geometrySphere, materialSphere);
             sphere.position.x = 0;
             sphere.position.y = 0;
             sphere.position.z = 0;
-            sphere.rotation.x = 2;
+            sphere.rotation.z = 1;
             scene.add(sphere);
 
             const animate = () => {
@@ -564,76 +578,51 @@ const Game = () => {
                         .current
                         .update(delta)
                 }
-                renderer.render(scene, camera.current)
+                renderer.render(scene, camera.current);
                 window.requestAnimationFrame(animate);
             }
             animate()
             //CHECK IF MODELS ARE LOADED
             percentage.current.innerText = "0 %";
             let array = [
-                "Loading Existential Buffer",
-                "Setting Universal Physical Constants",
-                "Modeling Object Components",
-                "Generating Jobs Kappa",
-                "Installing ransomware: Complete >:)",
-                "Stealing your girlfriend",
-                "Gathering Particle Sources",
-                "I'm testing your patience",
-                "Reconfoobling energymotron...",
-                "Your left thumb points to the right and your right thumb points to the left.",
-                "I'm sorry for being so slow",
-                "Downloading furry porn",
-                "Too fair to worship, too divine to love",
-                "An idea is always a generalization, and generalization is a property of thinking" +
-                        ". To generalize means to think",
-                "UwU",
-                "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pa" +
-                        "l buddy friend chummy chum chum pal"
-            ]
-            manager.onProgress = () => {
-                if (parseInt(percentage.current.innerText.slice(0, -2)) < 80) {
-                    loadingScreenMessages.current.innerText = array[Math.floor(Math.random() * array.length)];
-                    percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
+                "Loading Existential Buffer", "Setting Universal Physical Constants",
+                "Modeling Object Components", "Installing ransomware: Complete >:)",
+                 "Gathering Particle Sources", "I'm testing your patience",
+                "Reconfoobling energymotron...", "Your left thumb points to the right and your right thumb points to the left.",
+                "I'm sorry for being so slow", "Too fair to worship, too divine to love",
+                "An idea is always a generalization, and generalization is a property of thinking. To generalize means to think",
+                "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
+                 ]
+        manager.onProgress = ()=>{
+                if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
+                loadingScreenMessages.current.innerText =  array[Math.floor(Math.random() * array.length)];
+                percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
                 }
-            }
-            manager.onLoad = () => {
-                setInterval(() => {
-                    if (parseInt(percentage.current.innerText.slice(0, -2)) < 100) {
-                        percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
-                        loadingScreenMessages.current.innerText = array[Math.floor(Math.random() * array.length)];
-                    } else if (parseInt(percentage.current.innerText.slice(0, -2)) === 100) {
-                        percentage.current.innerText = "100%";
-                        fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
-                        angleSphereForTrees.current = [0, 0, 0];
-                        console.log(trees.current.length + " THIS IS THE TEREESS");
-                        setTimeout(() => setComponentLoaded(true), 600);
-                    }
-                }, 200);
-            }
+                else{
+                    percentage.current.innerText = "100%";
+                }
         }
+            manager.onLoad = ()=>{
+                percentage.current.innerText = "100%";
+                        fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
+                        angleSphereForTrees.current = [0, 0];
+                        fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+            }
+    }
     })
-    let addHeart = ()=>{
-        switch(isHeartDead.current){
-            case 1: 
-            console.log("SET 1!")
-            setHealth(health + 1);
-            break;
-            case 2: 
-            console.log("SET 2!")
-            setHealth(health + 1);
-            break;
-            case 3:
-            console.log("SET 3!")
-            setHealth(health + 1);
-            break;
-            case 4: 
-            console.log("SET 4!")
-            setHealth(health + 1);
-            break;
-            default:
+    
+    let addMusicAnimation = ()=>{
+        if(bar1.current.style.animation === ""){
+        bar1.current.style.animation = "increaseHeightBar1 1.5s linear infinite"
+        bar2.current.style.animation = "increaseHeightBar1 1s linear infinite"
+        bar3.current.style.animation = "increaseHeightBar1 0.75s linear infinite"
+        }
+        else{
+        bar1.current.style.animation = ""
+        bar2.current.style.animation = ""
+        bar3.current.style.animation = ""                   
         }
     }
-    setInterval(()=>addHeart, 5);
     return (
         <div>
             <div>
@@ -642,22 +631,73 @@ const Game = () => {
                      minWidth: "200px", maxWidth: "200px", display: "flex",
                      top: "6.5rem", zIndex: "5"
                      }}>
-                         <div className= {health >= 1 ? "heart2" : "heart"}></div>
-                         <div className= {health >= 2 ? "heart2" : "heart"}></div>
-                         <div className= {health >= 3 ? "heart2" : "heart"}></div>
-                         <div className= {health >= 4 ? "heart2" : "heart"}></div>
+                         <div className= "heart"></div>
+                         <div ref={health} style={{width: "50px", height: "50px", display: "grid", fontSize: "120%", color: "white", textAlign: "center", alignItems: "center"}}></div>
                      </div>
                 <div style={{
                     position: "absolute", minHeight: "10%", maxHeight: "10%",
-                     minWidth: "20%", maxWidth: "20%", background: "red", right: "0%",
+                     minWidth: "200px", maxWidth: "20%", right: "0%",
                      top: "6.5rem",  zIndex: "5", display: "flex", color: "white",
-                     alignItems: "center", textAlign: "center", fontSize: "200%"
+                     alignItems: "center", textAlign: "center", fontSize: "200%", textShadow: "11px 11px 6px rgba(150, 150, 150, 1)"
                      }}>
                     <div style={{flex: "1"}}>Score:</div>
                     <div ref={scoreChecker}style={{flex: "1"}}></div>
                 </div>
             </div>
             <div style={style.canvas} ref={canvas}></div>
+            <div style={{position: "absolute", display: "grid", textAlign: "center", height: "125px", width: "200px",
+            left: "50%", top: "50%", marginLeft: "-100px", marginTop: "-67.5px", background: "brown", color: "white", zIndex: "2",
+            borderRadius: "7px",
+            boxShadow: "0px 10px 21px 0px rgba(50, 50, 50, 0.75)", alignContent: "center", transition: "all 0.5s ease-out", fontWeight: "bold",
+            cursor: "pointer"
+            }}
+            onMouseEnter = {(e)=>{
+                e.currentTarget.style.transform = 'scale(1.05, 1.05)';
+                e.currentTarget.style.boxShadow = '0px 3px 27px 0px rgba(50, 50, 50, 1)';
+            }} 
+            onMouseLeave={(e)=>{
+                e.currentTarget.style.transform = 'scale(1, 1)';
+                e.currentTarget.style.boxShadow = '0px 10px 21px 0px rgba(50, 50, 50, 0.75)';
+            }}
+            ref={playButton} onClick={()=> {
+                if(animationsAdded.current === false || animationsAdded.current === null){
+                playButton.current.style.animation = "loadingDone 1s normal forwards ease-out";
+                playButton.current.onanimationend = ()=>{
+                    playButton.current.style.visibility = "hidden";
+                    animationsAdded.current = true/*SETS RUNANDANIMATION*/
+                    let action = mixer
+                            .current
+                            .clipAction(obj.current.animations[14]) // RUN ANIMATION
+                    action.play()
+                    action.clampWhenFinished = true;
+                }
+                }
+                }}>PLAY!</div>
+                <div className= "musicPlayer" style={{display:"flex", position: "fixed", height: "50px", width:"4%", left: "95%", top:"75%", zIndex: "4", background: "transparent", borderRadius: "50%", transform: "rotate3d(0, 0, 1, 180deg)"}} onClick={()=>{
+                    let audio1 = audio.current;
+                    addMusicAnimation();
+                    if (audio1.duration > 0 && !audio1.paused) {
+                        audio1.pause();
+                        //Its playing...do your job
+                    } else {
+                        audio1.play();
+                        //Not playing...maybe paused, stopped or never played.   
+                    }
+                }}
+                onMouseEnter={()=>{
+                    musicExplain.current.style.display = "flex";
+                    }}
+                onMouseLeave = {()=>{
+                    musicExplain.current.style.display = "none";
+                }}
+                >
+                    <div ref={bar1} style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div>
+                    <div ref={bar2}style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div>
+                    <div ref={bar3}style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div> 
+                </div>
+                <div ref={musicExplain} style={{display:"none", textAlign: "center", position: "fixed", justifyContent: "center", alignItems: "center", height: "25px", width:"75px", left: "89%", top:"75%"
+                , zIndex: "4", background: "black", opacity: "0.7", fontSize: "50%", color: "white", transition: "all 0.5s ease-out"}}>Play some FFIX music!</div>
+                <audio src="kujaTheme.mp3" ref={audio} loop></audio>            
             <div className= "loadingScreen" ref={fadeScreen} style={componentLoaded ? {display: "none"} : {display: "grid"}}>
                 <div>
                     <span>L</span>

@@ -6,8 +6,8 @@ import { SimplifyModifier } from 'three/examples/jsm/modifiers/SimplifyModifier.
 import {Link} from "react-router-dom";
 import {Lensflare, LensflareElement} from 'three/examples/jsm/objects/Lensflare.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faGithub} from '@fortawesome/free-brands-svg-icons'
-import { faWindowClose, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
+import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons'
+import { faWindowClose, faQuestionCircle, faMapMarked } from '@fortawesome/free-solid-svg-icons'
 
 
 
@@ -25,17 +25,10 @@ let style = {
     },
     title: {
         display: 'flex',
-        color: 'white',
+        color: 'brown',
+        cursor: "default",
         fontSize: '6rem',
         justifyContent: 'center'
-    },
-    howToPlay: {
-        display: 'flex',
-        position: 'relative',
-        color: 'white',
-        fontSize: '4rem',
-        left: '10%',
-        width: '90%'
     },
     canvas: {
         display: 'grid',
@@ -62,6 +55,8 @@ let style = {
         color: 'white',
         zIndex: "2",
         display: 'flex',
+        fontSize: "80%",
+        justifyContent: "center",
         height: '10rem',
         position: "relative",
         width: "100%",
@@ -102,10 +97,13 @@ const HomeScreen = () => {
     let bar1 = useRef(0);
     let bar2 = useRef(0);
     let bar3 = useRef(0);
+    let audio1 = useRef(0);
+    let musicExplain = useRef(0);
+    const [smartphoneView, setSmartphoneView] = useState(false);
     useEffect(() => {
         if(componentLoaded === false){
-        let height = canvas.current.clientHeight
-        let width = canvas.current.clientWidth
+        let height = canvas.current.clientHeight;
+        let width =  document.documentElement.clientWidth;
         let manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
@@ -158,8 +156,8 @@ const HomeScreen = () => {
         let clock = new THREE.Clock();
         window.addEventListener('resize', () => {
             if (canvas.current !== null) {
-                width = canvas.current.clientWidth
-                height = canvas.current.clientHeight
+                width = document.documentElement.clientWidth
+                height = document.documentElement.clientHeight
                 renderer.setSize(width, height);
                 camera.current.aspect = width / height;
                 camera.current.updateProjectionMatrix();
@@ -206,7 +204,7 @@ const HomeScreen = () => {
             renderer.render(scene, camera.current)
         })
         scene.add(particleSys)
-        /*// CHARACTER ADDON FOR MAIN MENU
+        // CHARACTER ADDON FOR MAIN MENU
         const loader = new GLTFLoader(manager)
         loader.load("knight.gltf", function (object) {
             object.scene.position.x = 0;
@@ -217,12 +215,12 @@ const HomeScreen = () => {
             action.play();
             scene.add(object.scene);
             switcher.current = 1;
-        },);*/
+        },);
         // setTimeout(()=>mixer.clipAction(obj.animations[1]).play(), 8000)// WORKS
         // TRYING A SPHERE
         let floorTexture = new THREE
             .TextureLoader()
-            .load('homescreenGrass.jpg', () => {
+            .load('homescreenGrass.jpg', (manager) => {
                 floorTexture.wrapS = THREE.RepeatWrapping;
                 floorTexture.wrapT = THREE.RepeatWrapping;
                 floorTexture
@@ -230,7 +228,7 @@ const HomeScreen = () => {
                     .set(2, 2);
             });
         let floorBump = new THREE
-            .TextureLoader()
+            .TextureLoader(manager)
             .load('sunbump.png', () => {
                 floorTexture.wrapS = THREE.RepeatWrapping;
                 floorTexture.wrapT = THREE.RepeatWrapping;
@@ -247,11 +245,11 @@ const HomeScreen = () => {
         sphere.rotation.x = 1;
         scene.add(sphere);
         const textu = new THREE
-            .TextureLoader()
+            .TextureLoader(manager)
             .load("/textures/skyBackgroundCropped.jpeg");
         textu.minFilter = THREE.LinearFilter;
         scene.background = textu;
-        /*//TREE
+        //TREE
         const treeLoader = new GLTFLoader(manager);
         treeLoader.load('mytree.glb', (tree) => {
             tree.scene.position.x = 0;
@@ -261,9 +259,9 @@ const HomeScreen = () => {
             tree.scene
             .scale.set(0.5, 0.5, 0.5);
             scene.add(tree.scene);
-        })*/
+        })
 
-        /*/GRASS
+        //GRASS
         //USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
         const grassLoader = new GLTFLoader(manager);
         for(let i = 0; i < 10; i++){
@@ -285,7 +283,24 @@ const HomeScreen = () => {
             angleSphereForgrass.current+=0.001;
             grassRotationAngle.current-=0.001;
         })
-    }*/
+
+        //media queries
+        let phoneViewCheck = (e)=>{
+            if(e.matches === true){
+                setSmartphoneView(true);
+                explainBox.current.style.width = "100%";
+                explainBox.current.style.left = "0%";
+            }
+            else{
+                explainBox.current.style.width = "70%";
+                explainBox.current.style.left = "15%";
+                setSmartphoneView(false);
+            }
+        }
+        phoneViewCheck(window.matchMedia("(max-width: 700px)"));
+        window.matchMedia("(max-width: 700px)").addEventListener('change', phoneViewCheck);
+
+    }
 
         renderer.setSize(width, height)
         canvas
@@ -306,10 +321,10 @@ const HomeScreen = () => {
         percentage.current.innerText = "0 %";
         let array = [
             "Loading Existential Buffer", "Setting Universal Physical Constants",
-            "Modeling Object Components", "Generating Jobs Kappa", "Installing ransomware: Complete >:)",
-            "Stealing your girlfriend", "Gathering Particle Sources", "I'm testing your patience",
+            "Modeling Object Components", "Installing ransomware: Complete >:)",
+             "Gathering Particle Sources", "I'm testing your patience",
             "Reconfoobling energymotron...", "Your left thumb points to the right and your right thumb points to the left.",
-            "I'm sorry for being so slow", "Downloading furry porn", "Too fair to worship, too divine to love",
+            "I'm sorry for being so slow", "Too fair to worship, too divine to love",
             "An idea is always a generalization, and generalization is a property of thinking. To generalize means to think",
             "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
              ]
@@ -356,71 +371,101 @@ const HomeScreen = () => {
         <div>
             <div ref={canvas} style={style.canvas} onMouseMove={(e)=>mouseMove(e)}></div>
             <div style={style.container} onMouseMove={(e)=>mouseMove(e)}>
-                <div className="title" style={style.title}>
+                <div style={style.title}>
                     <span
                         style={{
-                        transition: 'all 1s ease-out'
+                        transition: 'all 1s ease-out', zIndex: "3", textShadow: "4px 4px 3px rgba(150, 150, 150, 1)"
                     }}
                         onMouseEnter={(t) => {
-                        t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out';
-                        t.currentTarget.style.color = "rgb(29, 146, 226)"
+                        t.currentTarget.style.animation = 'loading 1s normal forwards';
+                        t.currentTarget.style.color = "rgb(29, 146, 226)";
+                        t.currentTarget.style.textShadow = "11px 11px 6px rgba(150, 150, 150, 1)";
                     }}
                         onAnimationEnd={(t) => {
                         t.currentTarget.style.animation = 'none';
-                        t.currentTarget.style.color = "white"
-                    }}>G</span>
+                        t.currentTarget.style.color = "brown";
+                        t.currentTarget.style.textShadow = "4px 4px 3px rgba(150, 150, 150, 1)";
+                    }}>X</span>
                     <span
                         style={{
-                        transition: 'all 1s ease-out'
+                        transition: 'all 1s ease-out', zIndex: "3", textShadow: "4px 4px 3px rgba(150, 150, 150, 1)"
                     }}
                         onMouseEnter={(t) => {
-                        t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out';
-                        t.currentTarget.style.color = "rgb(125, 140, 40)"
+                        t.currentTarget.style.animation = 'loading 1s normal forwards';
+                        t.currentTarget.style.color = "rgb(125, 140, 40)";
+                        t.currentTarget.style.textShadow = "11px 11px 6px rgba(150, 150, 150, 1)";
                     }}
                         onAnimationEnd={(t) => {
                         t.currentTarget.style.animation = 'none';
-                        t.currentTarget.style.color = "white"
-                    }}>a</span>
+                        t.currentTarget.style.color = "brown";
+                        t.currentTarget.style.textShadow = "4px 4px 3px rgba(150, 150, 150, 1)";
+                    }}>E</span>
                     <span
                         style={{
-                        transition: 'all 1s ease-out'
+                        transition: 'all 1s ease-out', zIndex: "3", textShadow: "4px 4px 3px rgba(150, 150, 150, 1)"
                     }}
                         onMouseEnter={(t) => {
-                        t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out';
-                        t.currentTarget.style.color = "rgb(70, 75, 68)"
+                        t.currentTarget.style.animation = 'loading 1s normal forwards';
+                        t.currentTarget.style.color = "rgb(70, 75, 68)";
+                        t.currentTarget.style.textShadow = "11px 11px 6px rgba(150, 150, 150, 1)";
                     }}
                         onAnimationEnd={(t) => {
                         t.currentTarget.style.animation = 'none';
-                        t.currentTarget.style.color = "white"
-                    }}>m</span>
+                        t.currentTarget.style.color = "brown";
+                        t.currentTarget.style.textShadow = "4px 4px 3px rgba(150, 150, 150, 1)";
+                    }}>N</span>
                     <span
                         style={{
-                        transition: 'all 1s ease-out'
+                        transition: 'all 1s ease-out', zIndex: "3", textShadow: "4px 4px 3px rgba(150, 150, 150, 1)"
                     }}
                         onMouseEnter={(t) => {
-                        t.currentTarget.style.animation = 'loading 1s normal forwards ease-in-out';
-                        t.currentTarget.style.color = "rgb(29, 146, 226)"
+                        t.currentTarget.style.animation = 'loading 1s normal forwards';
+                        t.currentTarget.style.color = "rgb(29, 146, 226)";
+                        t.currentTarget.style.textShadow = "11px 11px 6px rgba(150, 150, 150, 1)";
                     }}
                         onAnimationEnd={(t) => {
                         t.currentTarget.style.animation = 'none';
-                        t.currentTarget.style.color = "white"
-                    }}>e</span>
+                        t.currentTarget.style.color = "brown";
+                        t.currentTarget.style.textShadow = "4px 4px 3px rgba(150, 150, 150, 1)";
+                    }}>T</span>
+                    <span
+                        style={{
+                        transition: 'all 1s ease-out', zIndex: "3", textShadow: "4px 4px 3px rgba(150, 150, 150, 1)"
+                    }}
+                        onMouseEnter={(t) => {
+                        t.currentTarget.style.animation = 'loading 1s normal forwards';
+                        t.currentTarget.style.color = "rgb(29, 146, 226)";
+                        t.currentTarget.style.textShadow = "11px 11px 6px rgba(150, 150, 150, 1)";
+                    }}
+                        onAnimationEnd={(t) => {
+                        t.currentTarget.style.animation = 'none';
+                        t.currentTarget.style.color = "brown";
+                        t.currentTarget.style.textShadow = "4px 4px 3px rgba(150, 150, 150, 1)";
+                    }}>A</span>
                 </div>
-                <div style={style.howToPlay}>How to play:</div>
                 <div className= "helpToExplainBox" style={{display:"grid", position: "fixed", height: "5%", width:"5%", left: "95%", top:"95%", zIndex: "4"}}>
                     <FontAwesomeIcon className= "help" icon={faQuestionCircle} style={{cursor: "pointer", width:"100%",fontSize: "200%", transition: "all 0.5s ease-out", color: "white"}} 
                     onClick={()=>{
-                        if(showExplainBox === false){
+                    if(showExplainBox === false && smartphoneView === false){
                         setShowExplainBox(true);
                         explainBox.current.style.animation = "popExplainBox 1s normal forwards ease-out"; 
                         explainBox.current.onanimationend = ()=>{
                             explainBox.current.style.animation = "none";
                         };
                     }
+                    else if(showExplainBox === false && smartphoneView === true){
+                            setShowExplainBox(true);
+                            explainBox.current.style.animation = "popExplainBox 1s normal forwards ease-out"; 
+                            explainBox.current.onanimationend = ()=>{
+                                explainBox.current.style.animation = "none";
+                                explainBox.current.style.width = "100%"; 
+                                explainBox.current.style.left = "0%"; 
+                        };                    
+                    }
                     }}/>
                 </div>
                 <div className= "musicPlayer" style={{display:"flex", position: "fixed", height: "50px", width:"4%", left: "95%", top:"75%", zIndex: "4", background: "transparent", borderRadius: "50%", transform: "rotate3d(0, 0, 1, 180deg)"}} onClick={()=>{
-                    let audio = document.getElementById('audio');
+                    let audio = audio1.current;
                     addMusicAnimation();
                     if (audio.duration > 0 && !audio.paused) {
                         audio.pause();
@@ -429,12 +474,21 @@ const HomeScreen = () => {
                         audio.play();
                         //Not playing...maybe paused, stopped or never played.   
                     }
-                }}>
+                }}
+                onMouseEnter={()=>{
+                    musicExplain.current.style.display = "flex";
+                    }}
+                onMouseLeave = {()=>{
+                    musicExplain.current.style.display = "none";
+                }}
+                >
                     <div ref={bar1} style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div>
                     <div ref={bar2}style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div>
                     <div ref={bar3}style={{height: "5%", width: "100%", marginLeft: "2%", marginRight: "2%", background: "white", flex: "1", position: "relative", bottom: "0", transition: "all 0.5 ease-out"}}></div> 
                 </div>
-                <audio src="finalFantasy.mp3" id="audio" loop></audio>
+                <div ref={musicExplain} style={{display:"none", textAlign: "center", position: "fixed", justifyContent: "center", alignItems: "center", height: "25px", width:"75px", left: "89%", top:"75%"
+                , zIndex: "4", background: "black", opacity: "0.7", fontSize: "50%", color: "white", transition: "all 0.5s ease-out"}}>Play some FFIX music!</div>
+                <audio src="finalFantasy.mp3" ref={audio1} loop></audio>
                 <div ref={explainBox} style={showExplainBox ? style.explanationBox : {visibility: "hidden"}}>
                     <div>
                         <div style={{display: "grid", justifyContent: "right", alignContent: "center"}}>
@@ -472,7 +526,7 @@ const HomeScreen = () => {
                                 <FontAwesomeIcon className= "github" icon={faGithub} style={{cursor: "pointer", fontSize: "200%", transition: "all 0.5s ease-out"}} />
                                 </a>
                             </div> <br></br>
-                            <div style={{maxHeight: "100%", maxWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%"}}>
+                            <div style={{maxHeight: "100%", maxWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%", justifyContent: "center"}}>
                                 <img src="/explanationImages/tree.jpg" alt="blendertree" style={{maxHeight: "100%", maxWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}}></img>
                                 <div style={{textAlign: "left", marginTop: "1%", color: "darkgray", fontWeight: "100"}}>
                                     Tree model exported from blender where hair particles were turned into tree branch meshes.
@@ -495,12 +549,29 @@ const HomeScreen = () => {
                             <div style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%",  marginTop: "5%"}}>
                             <iframe ref={youtubeVideo} style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}} title= "game video" src="https://youtube.com/embed/playlist?list=PL9DADCB4F409084A4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </div>
+                            <div style={{maxHeight: "100%", maxWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%"}}>
+                                <img src="gameGif.gif" alt="game gif" style={{maxHeight: "100%", maxWidth: "100%", objectFit: "cover", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}}></img>
+                                <div style={{textAlign: "left", marginTop: "1%", color: "darkgray", fontWeight: "100"}}>
+                                    View from the distance of the scene.
+                                </div>
+                            </div>
+                            <div>
+                                My wish was to fill the entire sphere full of trees and grass but performance was being heavily affected. <br></br>
+                                I'm currently learning more about what goes on behind the three.js framework in order to create better scenes and i'm
+                                also improving my blender models focusing on performance when importing them to the web. 
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div style={style.playButton}>
                         <Link
                             to="/game"
+                            onMouseEnter={(e)=>{
+                                e.currentTarget.style.boxShadow = "inset 0px -80px 0px #2F3B47"
+                            }}
+                            onMouseLeave={(e)=>{
+                                e.currentTarget.style.boxShadow = ""
+                            }}
                             style={{
                             textDecoration: "none",
                             display: "grid",
@@ -508,17 +579,42 @@ const HomeScreen = () => {
                             width: "100%",
                             heigth: "100%",
                             justifyContent: "center",
-                            alignItems: "center"
+                            alignItems: "center",
+                            transition: "all 0.5s ease-out"
                         }}>Play</Link>
+                </div>
+            <div style={style.footer}>
+                <div style={{flex: "1", display: "grid", alignItems: "center", margin: "2%"}}>
+                    <div>Ignacio Martin Diaz</div>     
+                    <div>Portfolio: <a href="https://rogerpeke97.github.io/portfolio" style={{color: "white"}} rel="noopener noreferrer" target="_blank">https://rogerpeke97.github.io/portfolio</a></div>
+                    <div style={{display: "flex"}}>
+                    <FontAwesomeIcon icon={faMapMarked} style={{marginRight: "1%"}}/> 
+                    <div>Buenos Aires, Argentina</div>
                     </div>
-                <div style={style.footer}>
-                <div></div>
+                    <div>&copy; Copyright 2021, Ignacio Martin Diaz. All rights reserved</div>
+                </div>
+                <div style={{flex: "1", display: "grid", alignItems: "center", paddingLeft: "1%", borderLeft: "2px solid white"}}>
+                    <div style={{display: "flex"}}>
+                        <a href="https://github.com/Rogerpeke97/" rel="noopener noreferrer" target="_blank"
+                        style={{justifyContent: "center", display: "grid", textDecoration: "none", alignContent: "center", cursor: "default", color: "white", marginRight: "1%"}}>
+                        <FontAwesomeIcon icon={faGithub} style={{cursor: "pointer", fontSize: "100%", transition: "all 0.5s ease-out"}} />
+                        </a>
+                    <div>Github</div> 
+                    </div>
+                    <div style={{display: "flex"}}>
+                    <a href="https://www.linkedin.com/in/ignacio-martin-diaz-2a30251b7/" rel="noopener noreferrer" target="_blank"
+                        style={{justifyContent: "center", display: "grid", textDecoration: "none", alignContent: "center", cursor: "default", color: "white", marginRight: "1%"}}>
+                        <FontAwesomeIcon icon={faLinkedin} style={{cursor: "pointer", fontSize: "100%", transition: "all 0.5s ease-out"}} />
+                    </a>
+                    <div>LinkedIn</div> 
+                    </div>
+                </div>
             </div>
             </div>
             <div
                 className="loadingScreen"
                 ref={fadeScreen}
-                style={componentLoaded ? {display: "none"}: {display: "grid"}}>
+                style={componentLoaded ? {display: "none"} : {display: "grid"}}>
                 <div>
                     <span>L</span>
                     <span>O</span>

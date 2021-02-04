@@ -9,29 +9,32 @@ let style = {
         minWidth: '100%',
         maxWidth: '100%',
         minHeight: '100vh',
-        maxHeight: '100vh',
         marginTop: "6.5rem",
-        backgroundColor: 'red',
+        backgroundColor: 'darkred',
         display: 'grid',
         color: 'black',
-        justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: "center"
     },
     insideAccount: {
         minHeight: "550px",
         maxHeight: "100%",
-        minWidth: "360px",
-        maxWidth: "100%",
-        backgroundColor: "white",
+        minWidth: "700px",
+        maxWidth: "700px",
+        backgroundColor: "lightgray",
         display: "grid"
     },
     canvas:{
         flex: "1",
-        minHeight: "100px",
-        minWidth: "350px",
-        maxHeight: "100%", 
-        maxWidth: "100%",
+        minHeight: "200px",
+        maxHeight: "200px", 
+        minWidth: "200px",
+        maxWidth: "200px",
+        border: "2px solid black"
     },
+    chartBakcground: {
+        background: "gray"
+    }
 }
 
 const Account = () => {
@@ -40,35 +43,61 @@ const Account = () => {
         setUserInfo] = useState("");
     const [joinedDate, setJoinedDate] = useState("");
     const [maxScore, setMaxScore] = useState("");
+    const [gameTag, setGameTag] = useState("");
     let canvas = useRef(0);
-    const[logChecker, setLogChecker] = useState(false); //SENDS POST REQUEST ONCE 
+    let scene = useRef(0);
+    let color = useRef(0);
+    const [colorSet, setColorSet] = useState("");
 
     let checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
-        if(logChecker === false){
         axios.post('http://localhost:8080/accountdetails', {
             authorization: localStorage.getItem('user')
         }, {
             headers: {
                 // Overwrite Axios's automatically set Content-Type
                 'Content-Type': 'application/json',
-                'authorization': `Bearer ${localStorage.getItem('user')}`
+                'Authorization': `Bearer ${localStorage.getItem('user')}`
                 }
             })
             .then(res => {
-                let [user, date, score] = JSON.stringify(res.data).split(",");
+                if(res.data.newToken){
+                    localStorage.setItem('user', res.data.newToken);
+                    checkIfYouAreLogged();
+                }
+                else{
+                let [user, date, score, avatar, gametag] = JSON.stringify(res.data).split(",");
                 setUserInfo(user.slice(1, user.length));
                 setJoinedDate(date);
-                setMaxScore(score.slice(0, -1));
-                setLogChecker(true);
+                setMaxScore(score);
+                setGameTag(gametag.slice(0, -1));
+                if(avatar.length < 1){
+                    scene.current.background = new THREE.Color(0xFF0000);
+                }
+                else{
+                    switch(avatar){
+                        case "red":
+                            scene.current.background = new THREE.Color(0xFF0000);
+                            break;
+                        case "yellow":
+                            scene.current.background = new THREE.Color(0xFFFF00);
+                            break;
+                        case "blue":
+                            scene.current.background = new THREE.Color(0x0000ff);
+                            break;
+                        default:        
+                    }
+                }
+                }
             })
             .catch(error => {
-             window.location.assign('http://localhost:3000/login')
+            window.location.assign('http://localhost:3000/login')
             })
-        }
     };
-    checkIfYouAreLogged();
+    useEffect(()=>{
+        checkIfYouAreLogged();
+    })
 
-        /*useEffect(()=>{    
+        useEffect(()=>{    
         //AVATAR
         let obj;
         const loader = new OBJLoader();
@@ -76,9 +105,8 @@ const Account = () => {
             object.position.x = 0;
             object.position.y = -1.5;
             object.position.z = -4;
-            console.log(object)
             obj = object;
-            scene.add( obj );
+            scene.current.add( obj );
         } );
             let height = canvas.current.clientHeight
             let width = canvas.current.clientWidth
@@ -96,7 +124,7 @@ const Account = () => {
                 obj.lookAt(pointOfIntersection);       
             }
     
-            const scene = new THREE.Scene();
+            scene.current = new THREE.Scene();
             //scene.add(helper) ONLY FOR DEBUGGING
             const camera = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
             const renderer = new THREE.WebGLRenderer();
@@ -109,8 +137,8 @@ const Account = () => {
             light
                 .position
                 .set(0, 0, 3);
-            scene.add(light);
-            scene.background = new THREE.Color(0x006400);
+            scene.current.add(light);
+            scene.current.background = new THREE.Color(color.current);
       
             window.addEventListener('resize', ()=>{
                 if(canvas.current !== null){
@@ -125,24 +153,128 @@ const Account = () => {
             canvas.current.appendChild(renderer.domElement)
     
             const animate = ()=>{
-                renderer.render(scene, camera)
+                renderer.render(scene.current, camera)
                 window.requestAnimationFrame(animate);
             }
             animate()
-        },[])*/
+        },[])
 
+        let setAvatarColor = ()=>{
+            axios.post('http://localhost:8080/setcolor', { // UPLOADS SCORE
+            authorization: localStorage.getItem('user'),
+            avatar: `${color.current}`
+        }, {
+            headers: {
+                // Overwrite Axios's automatically set Content-Type
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('user')}`
+            }
+        }).then(res => {
+            setColorSet("Color set!");
+        }).catch(error => {
+            setColorSet("Could not update color");
+        })
+}
     return (
         <div style={style.backgroundAccount}>
             <div style={style.insideAccount}>
                 <div style={{display: "flex", overflow: "hidden"}}>
-                    <div style={style.canvas} ref={canvas}></div>
-                    <div style={{display: "grid", flex: "1"}}>
-                        <div>{userInfo}</div>
-                        <div>{joinedDate}</div>
-                        <div>{maxScore}</div>
+                    <div style={style.canvas} ref={canvas}>
+                    </div>
+                    <div style={{flex: "1", display: "grid", justifyContent: "center", paddingTop: "5%", border: "2px solid black"}}>
+                        <div>
+                            <div style={{textDecoration: "underline", fontWeight: "bold"}}>Set avatar's background color:</div>
+                            <div style={{display: "flex", justifyContent: "center", height: "10%", width: "100%", marginTop: "5%"}}>
+                                <div style={{flex: "1", display: "flex", justifyContent: "center"}}>
+                                    <div style={{background:"red", height: "30px", width:"30px", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)",
+                                    transition: "0.5s ease-out", cursor: "pointer", border: "1px solid black"
+                                    }}
+                                     onMouseEnter={(e)=>{e.currentTarget.style.transform = "scale(1.05, 1.05)"}}
+                                     onMouseLeave={(e)=>{e.currentTarget.style.transform = "scale(1, 1)"}}   
+                                     onClick={()=>{
+                                         scene.current.background = new THREE.Color(0xFF0000);
+                                         color.current = "red";
+                                    }}                                 
+                                    ></div>
+                                </div>
+                                <div style={{flex: "1", display: "flex", justifyContent: "center"}}>
+                                    <div
+                                     style={{background:"yellow", height: "30px", width:"30px", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)",
+                                     transition: "0.5s ease-out", cursor: "pointer", border: "1px solid black"
+                                    }}
+                                     onMouseEnter={(e)=>{e.currentTarget.style.transform = "scale(1.05, 1.05)"}}
+                                     onMouseLeave={(e)=>{e.currentTarget.style.transform = "scale(1, 1)"}}
+                                     onClick={()=>{
+                                         scene.current.background = new THREE.Color(0xFFFF00);
+                                         color.current = "yellow";
+                                        }}
+                                     ></div>                                    
+                                </div>
+                                <div style={{flex: "1", display: "flex", justifyContent: "center"}}>
+                                    <div style={{background:"blue", height: "30px", width:"30px", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)",
+                                    transition: "0.5s ease-out", cursor: "pointer", border: "1px solid black"                                    
+                                    }}
+                                     onMouseEnter={(e)=>{e.currentTarget.style.transform = "scale(1.05, 1.05)"}}
+                                     onMouseLeave={(e)=>{e.currentTarget.style.transform = "scale(1, 1)"}}  
+                                     onClick={()=>{
+                                         scene.current.background = new THREE.Color(0x0000ff);
+                                         color.current = "blue";
+                                        }}                                  
+                                    ></div>                                    
+                                </div>
+                            </div>
+                            <div style={{display: "grid", textAlign: "center", height: "50px", width: "70%", marginTop: "10%",
+                            background: "black", color: "white", zIndex: "2", position: "relative", left: "15%",
+                            boxShadow: "inset 0px 0px 0px #2F3B47", alignContent: "center", transition: "all 0.5s ease-out", fontWeight: "bold",
+                            cursor: "pointer"
+                           }}
+                           onClick={()=>setAvatarColor()}
+                           onMouseEnter={(e)=>{e.currentTarget.style.boxShadow = "inset 0px -80px 0px #2F3B47"}}
+                           onMouseLeave={(e)=>{e.currentTarget.style.boxShadow = "inset 0px 0px 0px #2F3B47"}}>Set</div>
+                           <div style={{display: "grid", justifyContent: "center", alignItems: "center", marginTop: "5%"}}>{colorSet}</div>
+                        </div>
+                    </div>
+                    <div style={{display: "grid", flex: "1", justifyContent: "center", alignItems: "center", textAlign: "center", fontWeight: "bold", border: "2px solid black"}}>
+                        <div>
+                            <div style={{marginBottom: "2%", border: "1px solid black", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)"}}>
+                                Account
+                            </div>
+                            <div>
+                            {userInfo}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{marginBottom: "2%", border: "1px solid black", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)"}}>
+                                Username
+                            </div>
+                            <div>
+                            {gameTag}
+                            </div>
+                        </div>
+                        <div>
+                        <div style={{marginBottom: "2%", border: "1px solid black", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)"}}>
+                                Join date
+                            </div>
+                            <div>
+                            {joinedDate}
+                            </div>
+                        </div>
+                        <div>
+                        <div style={{marginBottom: "2%", border: "1px solid black", boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)"}}>
+                            Max score
+                            </div>
+                            <div>
+                            {maxScore}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div>Stop</div>
+                <div style={{display: "grid", alignItems: "center"}}>
+                    <div style={{fontWeight: "bold", textAlign: "center", color: "gray"}}>
+                        This part aswell as other parts of the website are not finished, my idea was to include more avatars and more interactivity.<br></br>
+                        However due to time constraints and perhaps the desire to start my new project, this will be delayed undefinitely.
+                    </div>
+                </div>
             </div>
         </div>
     )

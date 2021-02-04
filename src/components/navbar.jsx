@@ -52,7 +52,6 @@ let style = {
         fontSize: "1.3rem",
         fontWeight:"bold",
         maxWidth: "170px",
-        textOverflow: "ellipsis",
         textDecoration: "none",
         margin: "0"
     },
@@ -210,8 +209,7 @@ const Navbar = ()=>{
         
     }
 
-    useEffect(()=>{
-        console.log(`Bearer ${localStorage.getItem('user')}`)
+    let axiosPost = ()=>{
         axios.post('http://localhost:8080/account', 
         {authorization: localStorage.getItem('user')},
         {headers: {
@@ -222,16 +220,24 @@ const Navbar = ()=>{
         }
         )
         .then(res => {
-            console.log(res);
-            let getUser = res.data.split(" ");
+            if(res.data.newToken){
+                localStorage.setItem('user', res.data.newToken);
+                axiosPost();
+            }
+            else{
+            let getUser = res.data.split(",");
             setUsername(getUser[0]);
             setLogged(true);
+            }
           })
           .catch(error => {
-            console.log(error)
             setLogged(false);
-        })       
-    }, [])
+        })  
+    }
+
+    useEffect(()=>{
+        axiosPost();
+    })
 
     let dropdown = ()=>{
 
@@ -262,6 +268,7 @@ const Navbar = ()=>{
             homeFont.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent";
             underlineHome.current.style.transform = "scaleX(0)";
         }}
+        onClick={()=>window.location.assign('http://localhost:3000')}
         >
             <h2 style={style.homeButton} ref={homeFont}>HOME</h2>
             <div style={{height: "2px", width: "100%", background:"white",
@@ -343,7 +350,7 @@ const Navbar = ()=>{
                  <FontAwesomeIcon style={{color: "rgb(125, 140, 40)"}} icon={faTrophy} />
                   <div style={{paddingLeft: "2%"}}>Leaderboard</div>
                   </Link>
-                  <div onClick={logOut} style={style.dropdown}
+                  <div onClick={logOut} style={logged ? style.dropdown : {display: "none"}}
                    onMouseEnter={(e)=>{
                        e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
                        e.currentTarget.style.color = "white";

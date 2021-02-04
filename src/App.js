@@ -2,7 +2,8 @@ import './App.css';
 import HomeScreen from './components/homeScreen';
 import Navbar from './components/navbar';
 import Login from './components/login';
-import Game from './components/game'
+import Game from './components/game';
+import Leaderboard from './components/leaderboard';
 import axios from 'axios'
 
 import {
@@ -47,6 +48,11 @@ const [value, setValue] = useState({accountInfo: 0, logged: false, username: ""}
       <Navbar/>
       <Account/>
       </div>
+    } />
+    <Route exact path="/leaderboard" render= { props =>
+    <div> 
+    <Leaderboard/>
+    </div>
     } />
     </PageContext.Provider>
     </Switch>

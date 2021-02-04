@@ -71,11 +71,11 @@ let style = {
 const Login = () => {
     let input = useRef(null);
     let password = useRef(null);
+    let gametag = useRef(null);
     let [displayMessage,
         setMessage] = useState("");
     let [signIn,
         setSignIn] = useState(0);// STATE 0 = SIGNUP // STATE 1 = SIGNIN // STATE 2 = CHANGE PASSWORD
-    const [scene, setScene] = useState("Scene not set");
     let signInButton = useRef(0);
     let underlineSignIn = useRef(0);
     let signUpButton = useRef(0);
@@ -90,33 +90,52 @@ const Login = () => {
     const [changePassword, setChangePassword] = useState(false);
     let newPassword = useRef(0);
     let repeatNewPassword = useRef(0);
-    const [fieldsAreValid, setFieldsAreValid] = useState(0);
+    const [fieldsEmailAreValid, setFieldsEmailAreValid] = useState(0);
+    const [fieldsPasswordAreValid, setFieldsPasswordAreValid] = useState(0);
+    const [fieldsUserAreValid, setFieldsUserAreValid] = useState(0);
     const[logChecker, setLogChecker] = useState(false); //SENDS POST REQUEST ONCE SO THAT WHEN 
     //CONTENT IS RE RENDERED THE FUNCTION DOESNT KEEP SENDING REQUESTS TO THE SERVER
+    let loadingScreenMessages = useRef(0);
+    let percentage = useRef(0);
+    let fadeScreen = useRef(0);
+    const [componentLoaded,
+        setComponentLoaded] = useState(null);
 
 
     let validatorEmail = (value)=>{
         const validEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         if(validEmail.test(value)){
-            setFieldsAreValid(true);
+            setFieldsEmailAreValid(true);
             setMessage("");
         }
         else{
-            setFieldsAreValid(false);
+            setFieldsEmailAreValid(false);
             setMessage("Wrong username/password");
         }
     }
     let validatorPassword = (value)=>{
         const validPassword = /^(?=.*[A-Z])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
         if(validPassword.test(value)){
-            setFieldsAreValid(true);
+            setFieldsPasswordAreValid(true);
             setMessage("");
         }
         else{
-            setFieldsAreValid(false);
+            setFieldsPasswordAreValid(false);
             setMessage("Password must be of at least 8 characters, including digits and one upper case letter");
         }
        
+    }
+
+    let validatorUsername = (value)=>{
+        const validUser = /^().{1,15}$/;
+        if(validUser.test(value)){
+            setFieldsUserAreValid(true);
+            setMessage("");
+        }
+        else{
+            setFieldsUserAreValid(false);
+            setMessage("User name cannot be longer than 15 characters");
+        }
     }
 
     let checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
@@ -140,13 +159,14 @@ const Login = () => {
     };
     checkIfYouAreLogged();
     async function signUp() {
-        if(fieldsAreValid === true){
+        if((fieldsEmailAreValid === true && fieldsPasswordAreValid === true) && fieldsUserAreValid === true){
         loadingAnimation.current.style.display = "grid";
         loginForm.current.style.filter = "blur(2px)";
         loginForm.current.style.pointerEvents = "none";
         let date = new Date();
         axios.post('http://localhost:8080/signup', {
             username: input.current.value,
+            gametag: gametag.current.value,
             password: password.current.value,
             date: `${date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate()}`
         }, {
@@ -185,7 +205,6 @@ const Login = () => {
                 'Content-Type': 'application/json'
             }
         }).then(res => {
-            console.log(res);
             //GET USERNAME AND TOKEN, USERNAME IN ONE AND TOKEN IN SECOND
             setTimeout(()=>{
             loadingAnimation.current.style.display = "none";
@@ -206,7 +225,6 @@ const Login = () => {
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
             loginForm.current.style.pointerEvents = "auto";
-            console.log(error)
             }, 2000);
             //setMessage(error.response.data.message);
         })
@@ -226,7 +244,6 @@ const Login = () => {
                 'Content-Type': 'application/json'
             }
         }).then(res => {
-            console.log(res);
             //GET USERNAME AND TOKEN, USERNAME IN ONE AND TOKEN IN SECOND
             setTimeout(()=>{
             loadingAnimation.current.style.display = "none";
@@ -247,7 +264,6 @@ const Login = () => {
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
             loginForm.current.style.pointerEvents = "auto";
-            console.log(error)
             }, 2000);
             //setMessage(error.response.data.message);
         })
@@ -258,9 +274,11 @@ const Login = () => {
     }
     // THREEJS BACKGROUND 
     useEffect(()=>{
-        if(scene === "Scene not set"){
-        let height = canvas.current.clientHeight
-        let width = canvas.current.clientWidth
+        if (componentLoaded === null) {
+        setComponentLoaded(false);
+        let height = canvas.current.clientHeight;
+        let width = canvas.current.clientWidth;
+        const manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
         camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
@@ -314,7 +332,7 @@ const Login = () => {
 
 
         //IMPORT SHIELD EXPORTED FROM BLENDER AS GLB
-        const loader = new GLTFLoader();
+        const loader = new GLTFLoader(manager);
         loader.load("shield.glb", function (object) {
             object.scene.position.x = 0.15;
             object.scene.position.y = -0.96489601753;
@@ -329,7 +347,6 @@ const Login = () => {
             let box = new THREE
             .Box3()
             .setFromObject(shield.current.scene);
-            console.log(box.getSize());//GET SHIELD SIZE = 3.85958407013199    
         });
 
 
@@ -350,9 +367,33 @@ const Login = () => {
             window.requestAnimationFrame(animate);
         }
         animate()
-        setScene("Scene set")
+                //CHECK IF MODELS ARE LOADED
+        percentage.current.innerText = "0 %";
+        let array = [
+            "Loading Existential Buffer", "Setting Universal Physical Constants",
+            "Modeling Object Components", "Installing ransomware: Complete >:)",
+             "Gathering Particle Sources", "I'm testing your patience",
+            "Reconfoobling energymotron...", "Your left thumb points to the right and your right thumb points to the left.",
+            "I'm sorry for being so slow", "Too fair to worship, too divine to love",
+            "An idea is always a generalization, and generalization is a property of thinking. To generalize means to think",
+            "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
+             ]
+        manager.onProgress = ()=>{
+                if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
+                loadingScreenMessages.current.innerText =  array[Math.floor(Math.random() * array.length)];
+                percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
+                }
+                else{
+                    percentage.current.innerText = "100%";
+                }
+        }
+            manager.onLoad = ()=>{
+                percentage.current.innerText = "100%";
+                        fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
+                        fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+            }
     }
-    },[scene]);
+    },[componentLoaded]);
 
     //TRACK MOUSE MOVEMENT AND ROTATE FORM AND SHIELD
     let mouseMove = (e)=>{
@@ -361,7 +402,6 @@ const Login = () => {
         let x = mousex - canvas.current.getBoundingClientRect().width / 2 ;
         let y = canvas.current.getBoundingClientRect().height / 2 - mousey ;
         loginForm.current.style.transform = `perspective(700px) rotateY(${x / 100}deg) rotateX(${ y / 100}deg)`;
-        console.log(camera.current.position.x);
         camera.current.rotation.y = (x / 1000) * (Math.PI / 180);
         camera.current.rotation.x = -(y / 1000) * (Math.PI / 180);
         shield.current.scene.rotation.y = (x / 100) * (Math.PI / 180);
@@ -506,6 +546,26 @@ const Login = () => {
                         boxShadow: "2px 2px 2px 0px rgb(70, 70, 70), 5px 5px 6px 0px #000000"
                     }}></input>
                 </div>
+                <div style={signIn === 1 ? {display: "none"} : {display: ""}}>
+                    <div style={{
+                        fontWeight: "bold"
+                    }}>User name</div>
+                    <input
+                        ref={gametag}
+                        onChange={(e)=>validatorUsername(e.currentTarget.value)}
+                        type="text"
+                        spellCheck="false"
+                        autoCapitalize="none"
+                        style={{
+                        paddingLeft: "2%",
+                        paddingRight: "2%",
+                        height: "50%",
+                        width: "94%",
+                        border: "none",
+                        margin: "1%",
+                        boxShadow: "2px 2px 2px 0px rgb(70, 70, 70), 5px 5px 6px 0px #000000"
+                    }}></input>
+                </div>                
                 <div>
                     <div style={{
                         fontWeight: "bold"
@@ -655,6 +715,20 @@ const Login = () => {
                     }}
                         ref={underlineSwitch}></div>
                 </div>
+            </div>
+            <div className= "loadingScreen" ref={fadeScreen} style={componentLoaded ? {display: "none"} : {display: "grid"}}>
+                <div>
+                    <span>L</span>
+                    <span>O</span>
+                    <span>A</span>
+                    <span>D</span>
+                    <span>I</span>
+                    <span>N</span>
+                    <span>G</span>
+                    <span>{" "}</span>
+                    <span ref={percentage}></span>
+                </div>
+                <div className= "messages" ref={loadingScreenMessages}></div>
             </div>
         </div>
     )

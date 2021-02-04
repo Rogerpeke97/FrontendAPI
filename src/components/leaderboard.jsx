@@ -47,8 +47,6 @@ let style = {
 }
 
 let Leaderboard = () => {
-    const [scores,
-        setScores] = useState(0);
     const [fetchedData,
         setFetched] = useState(false);
     const [dataReady,
@@ -76,7 +74,6 @@ let Leaderboard = () => {
                     'Authorization': `Bearer ${localStorage.getItem('user')}`
                 }
             }).then(res => {
-                setScores(res.data);
                 arrayData.current = res
                     .data
                     .slice(1, -1)

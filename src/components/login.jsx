@@ -3,7 +3,6 @@ import {useRef, useState, useEffect} from 'react'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from "three";
 
-const OrbitControls = require('three-orbit-controls')(THREE);
 let style = {
     backgroundLogin: {
         minWidth: '100%',
@@ -210,8 +209,9 @@ const Login = () => {
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
             loginForm.current.style.pointerEvents = "auto";
+            // eslint-disable-next-line no-unused-vars
             let [user,
-                token] = JSON
+                token] = JSON // eslint-disable-line no-use-before-define
                 .stringify(res.data)
                 .split("/n");
             localStorage.setItem('user', token.slice(0, -1));
@@ -249,8 +249,9 @@ const Login = () => {
             loadingAnimation.current.style.display = "none";
             loginForm.current.style.filter = "blur(0px)";
             loginForm.current.style.pointerEvents = "auto";
+            // eslint-disable-next-line no-unused-vars
             let [user,
-                token] = JSON
+                token] = JSON 
                 .stringify(res.data)
                 .split("/n");
             localStorage.setItem('user', token.slice(0, -1));
@@ -344,9 +345,6 @@ const Login = () => {
                 .set(0.3, 0.3, 0.3)*/
             shield.current = object;
             scene.add(object.scene);
-            let box = new THREE
-            .Box3()
-            .setFromObject(shield.current.scene);
         });
 
 

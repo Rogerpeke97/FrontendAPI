@@ -1,8 +1,7 @@
 /* eslint-disable no-use-before-define */
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import * as THREE from "three";
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {
     Link
   } from "react-router-dom";
@@ -110,10 +109,6 @@ const Navbar = ()=>{
 
         let height = canvas.current.clientHeight
         let width = canvas.current.clientWidth
-        let raycaster = new THREE.Raycaster();
-        let mouse = new THREE.Vector2();
-        let pointOfIntersection = new THREE.Vector3();
-        let plane = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0.5);
         //const helper = new THREE.PlaneHelper( plane, 10, 0xffff00 ); DEBUGGING TO SEE THE PLANE
 
         /*canvas.current.onmousemove = (e)=>{

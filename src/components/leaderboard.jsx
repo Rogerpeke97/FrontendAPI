@@ -52,8 +52,6 @@ let Leaderboard = () => {
     const [dataReady,
         setDataReady] = useState(false);
     let arrayData = useRef(0);
-    let loadingAnimation = useRef(0);
-    let loginForm = useRef(0);
     let canvas = useRef(0);
     let shield = useRef(0);
     let camera = useRef(0);
@@ -156,9 +154,6 @@ let Leaderboard = () => {
                 .set(0.3, 0.3, 0.3)*/
             shield.current = object;
             scene.add(object.scene);
-            let box = new THREE
-            .Box3()
-            .setFromObject(shield.current.scene);
         });
 
 
@@ -183,11 +178,10 @@ let Leaderboard = () => {
         percentage.current.innerText = "0 %";
         let array = [
             "Loading Existential Buffer", "Setting Universal Physical Constants",
-            "Modeling Object Components", "Installing ransomware: Complete >:)",
+            "Modeling Object Components",
              "Gathering Particle Sources", "I'm testing your patience",
-            "Reconfoobling energymotron...", "Your left thumb points to the right and your right thumb points to the left.",
-            "I'm sorry for being so slow", "Too fair to worship, too divine to love",
-            "An idea is always a generalization, and generalization is a property of thinking. To generalize means to think",
+            "Reconfoobling energymotron...",
+            "I'm sorry for being so slow",
             "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
              ]
         manager.onProgress = ()=>{

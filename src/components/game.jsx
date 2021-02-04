@@ -7,7 +7,6 @@ import '../App.css';
 import TWEEN from '@tweenjs/tween.js';
 import axios from 'axios';
 
-const OrbitControls = require('three-orbit-controls')(THREE);
 
 let style = {
     canvas: {
@@ -34,7 +33,6 @@ const Game = () => {
     let cameraAngle = useRef(-0.005);
     let camera = useRef(0);
     let knightMovementXAxis = useRef(0);
-    let knightRotationX = useRef(0);
     let knightRotationZ = useRef(0);
     let trees = useRef(0);
     let angleSphereForTrees = useRef(0);
@@ -83,7 +81,6 @@ const Game = () => {
             //BACKGROUND LIGHT
             const textureFlare = new THREE.TextureLoader(manager);
             const textureFlare0 = textureFlare.load( 'lensflare0.png' );
-            const textureFlareMoon = textureFlare.load( 'lensflareMoon.png' );
 			const textureFlare3 = textureFlare.load( 'lensflare3.png' );
             addLight( 0.55, 0.9, 0.5, 5000, 0, - 1000 );
             addLight( 0.08, 0.8, 0.5, 0, 0, - 1000 );
@@ -586,11 +583,10 @@ const Game = () => {
             percentage.current.innerText = "0 %";
             let array = [
                 "Loading Existential Buffer", "Setting Universal Physical Constants",
-                "Modeling Object Components", "Installing ransomware: Complete >:)",
+                "Modeling Object Components",
                  "Gathering Particle Sources", "I'm testing your patience",
-                "Reconfoobling energymotron...", "Your left thumb points to the right and your right thumb points to the left.",
-                "I'm sorry for being so slow", "Too fair to worship, too divine to love",
-                "An idea is always a generalization, and generalization is a property of thinking. To generalize means to think",
+                "Reconfoobling energymotron...",
+                "I'm sorry for being so slow",
                 "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
                  ]
         manager.onProgress = ()=>{

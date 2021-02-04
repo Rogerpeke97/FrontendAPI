@@ -2,7 +2,6 @@ import {useRef, useState, useEffect} from 'react'
 import '../App.css';
 import * as THREE from "three";
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { SimplifyModifier } from 'three/examples/jsm/modifiers/SimplifyModifier.js';
 import {Link} from "react-router-dom";
 import {Lensflare, LensflareElement} from 'three/examples/jsm/objects/Lensflare.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,7 +10,6 @@ import { faWindowClose, faQuestionCircle, faMapMarked } from '@fortawesome/free-
 
 
 
-const OrbitControls = require('three-orbit-controls')(THREE);
 
 let style = {
     container: {
@@ -93,7 +91,6 @@ const HomeScreen = () => {
     const [showExplainBox, setShowExplainBox] = useState(true);
     let explainBox = useRef(0);
     let youtubeVideo = useRef(0);
-    let titleYoutube = useRef(0);
     let bar1 = useRef(0);
     let bar2 = useRef(0);
     let bar3 = useRef(0);
@@ -547,7 +544,7 @@ const HomeScreen = () => {
                             the future to mobile with react native as a fun project, in the meantime you can watch it or grab your computer
                             and play around!.
                             <div style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%",  marginTop: "5%"}}>
-                            <iframe ref={youtubeVideo} style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}} title= "game video" src="https://youtube.com/embed/playlist?list=PL9DADCB4F409084A4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe ref={youtubeVideo} style={{maxHeight: "400px", minHeight: "400px", maxWidth: "100%", minWidth: "100%", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}} title= "game video" src="https://youtu.be/embed/pQOFoHOMXvw" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </div>
                             <div style={{maxHeight: "100%", maxWidth: "100%", display: "grid", alignContent: "center", marginBottom: "5%"}}>
                                 <img src="gameGif.gif" alt="game gif" style={{maxHeight: "100%", maxWidth: "100%", objectFit: "cover", boxShadow: "5px 5px 11px 0px rgba(50, 50, 50, 0.75)"}}></img>

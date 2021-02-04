@@ -191,7 +191,7 @@ const Navbar = ()=>{
             <FontAwesomeIcon icon={faChild} />
             </div>            
             <div style={{paddingLeft: "2%"}} >
-            <h2 style={style.loginButton} ref={loginFont}>LOGIN</h2>
+            <h2  style={style.loginButton} ref={loginFont}>LOGIN</h2>
                     <div style={{height: "2px", width: "100%", background:"white",
                      transform: "scaleX(0)", transition: "all 0.3s ease-out"}} ref={underlineLogin}></div>
             </div>
@@ -285,6 +285,7 @@ const Navbar = ()=>{
                 homeFont.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent";
                 underlineHome.current.style.transform = "scaleX(0)";
             }}
+            onClick={()=>window.location.assign('/')}
             >
                 <div style={style.homeButton} ref={homeFont}>
                     <FontAwesomeIcon icon={faHome} />
@@ -303,7 +304,7 @@ const Navbar = ()=>{
             <div style={style.grid1}>
                 <div style={{display: "grid", alignItems: 'center', justifyContent: 'center', position: "relative"}}>
                 <div
-                    onClick={()=>logged ? dropdown() : window.location.assign('/')}
+                    onClick={()=>logged ? dropdown() : window.location.assign('/login')}
                      style={style.loginButton}
                      ref={loginButton}
                      onMouseEnter={()=>{

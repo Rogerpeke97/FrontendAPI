@@ -268,7 +268,7 @@ const Navbar = ()=>{
             homeFont.current.style.textShadow = "0 0 0 transparent, 0 0 0 transparent";
             underlineHome.current.style.transform = "scaleX(0)";
         }}
-        onClick={()=>window.location.assign('http://localhost:3000')}
+        onClick={()=>window.location.assign('/')}
         >
             <h2 style={style.homeButton} ref={homeFont}>HOME</h2>
             <div style={{height: "2px", width: "100%", background:"white",
@@ -308,7 +308,7 @@ const Navbar = ()=>{
             <div style={style.grid1}>
                 <div style={{display: "grid", alignItems: 'center', justifyContent: 'center', position: "relative"}}>
                 <div
-                    onClick={()=>logged ? dropdown() : window.location.assign('http://localhost:3000/login')}
+                    onClick={()=>logged ? dropdown() : window.location.assign('/')}
                      style={style.loginButton}
                      ref={loginButton}
                      onMouseEnter={()=>{

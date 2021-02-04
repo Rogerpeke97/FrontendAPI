@@ -151,7 +151,7 @@ const Login = () => {
         }).then(res => {
             window
                 .location
-                .replace("http://localhost:3000");
+                .replace("/");
         }).catch(error => {
             setLogChecker(true);
         })
@@ -218,7 +218,7 @@ const Login = () => {
             setMessage("Login succesful!");
             window
                 .location
-                .replace("http://localhost:3000");
+                .replace("/");
             }, 2000);
         }).catch(error => {
             setTimeout(()=>{
@@ -257,7 +257,7 @@ const Login = () => {
             setMessage("Login succesful!");
             window
                 .location
-                .replace("http://localhost:3000");
+                .replace("/");
             }, 2000);
         }).catch(error => {
             setTimeout(()=>{

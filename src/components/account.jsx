@@ -2,7 +2,6 @@ import axios from 'axios';
 import {useEffect, useRef, useState} from 'react'
 import * as THREE from "three";
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import {Redirect} from 'react-router';
 
 let style = {
     backgroundAccount: {
@@ -38,7 +37,6 @@ let style = {
 }
 
 const Account = () => {
-    const input = useRef(null);
     const [userInfo,
         setUserInfo] = useState("");
     const [joinedDate, setJoinedDate] = useState("");

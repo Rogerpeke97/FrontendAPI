@@ -114,31 +114,22 @@ const HomeScreen = () => {
         camera
         .current.rotation.x = -0.1;
 
-        //DIRECTIONAL LIGHT
-        const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-        hemiLight.color.setHSL( 0.6, 1, 0.6 );
-        hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
-        hemiLight.position.set( 0, 50, 0 );
-        scene.add( hemiLight );
 
-        const hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
-        scene.add( hemiLightHelper );
 
         //
 
         const textureFlare = new THREE.TextureLoader(manager);
         const textureFlare0 = textureFlare.load( 'lensflare0.png' );
         const textureFlare3 = textureFlare.load( 'lensflare3.png' );
-        addLight( 0.55, 0.9, 0.5, 5000, 0, 1000 );
-        addLight( 0.08, 0.8, 0.5, -1000, 100, 1005 );
-        addLight( 0.995, 0.5, 0.9, 5000, 5000, 1000 );
+        addLight( 0.55, 1.5, 0.5, 5000, 0, 1000 );
+        addLight( 0.08, 1.4, 0.5, -1000, 100, 1005 );
+        addLight( 0.995, 1.2, 0.9, 5000, 5000, 1000 );
 
         function addLight( h, s, l, x, y, z ) {
 
-            const light = new THREE.PointLight( 0xffffff, 1.5, 2000 );
+            const light = new THREE.PointLight( 0xffffff, 1.5, 7500 );
             light.color.setHSL( h, s, l );
             light.position.set( x, y, z );
-            light.castShadow = true;
             scene.add( light );
 
             const lensflare = new Lensflare();
@@ -162,53 +153,51 @@ const HomeScreen = () => {
         });
 
         //// PARTICLES
-        let particleCount = 1000
+        let particleCount = 750;
         let particleDistance = 53;
-        let particles = new THREE.Geometry();
+        let particles = new THREE.BufferGeometry();
         let texture = new THREE
             .TextureLoader()
             .load('leaftexture.png');
         let pMaterial = new THREE.PointsMaterial({
-            color: 'green', size: 0.3, map: texture, alphaTest: 0.1, // removes black squares
-            blending: THREE.NormalBlending,
+            color: 'green', size: 0.3, map: texture, alphaTest: 0.1, // removes black squares,
+            blending: THREE.CustomBlending,
             transparent: true
         });
-        for (let i = 0; i < particleCount; i++) {
-            let posX = (Math.random() - 0.5) * particleDistance;
-            let posY = (Math.random() - 0.5) * particleDistance;
-            let posZ = (Math.random() - 0.5) * particleDistance;
-            let particle = new THREE.Vector3(posX, posY, posZ);
-            particles
-                .vertices
-                .push(particle);
-        }
 
+        let positions = [];
+
+        for (let i = 0; i < 750; i++) {
+            let posX = (Math.random() - 0.5) * particleDistance;
+            let posY = (Math.random() - 0.5) * particleDistance;;
+            let posZ = (Math.random() - 0.5) * particleDistance;;
+            positions.push(posX, posY, posZ);
+        }
+        particles.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         // create the particle system
         let particleSys = new THREE.Points(particles, pMaterial);
         particleSys.name = 'particleSys';
+        let star = particleSys.geometry.attributes.position.array;
         renderer.setAnimationLoop(() => {
-            let particleSys = scene.getObjectByName('particleSys');
-            particleSys
-                .geometry
-                .vertices
-                .forEach(particle => {
-                    particle.y -= 0.01;
-                    if (particle.y < -10) {
-                        particle.y = 20
-                    }
-                    particleSys.geometry.verticesNeedUpdate = true;
-                })
+            for(let i = 1; i < particleCount * 3; i+=3){
+                star[i] -= 0.01;
+                if(star[i] < -10){
+                    star[i] = 20;
+                }
+                particleSys.geometry.attributes.position.needsUpdate = true;
+            }
             renderer.render(scene, camera.current)
         })
         scene.add(particleSys)
         // CHARACTER ADDON FOR MAIN MENU
         const loader = new GLTFLoader(manager)
+        let action;
         loader.load("knight.gltf", function (object) {
             object.scene.position.x = 0;
             object.scene.position.y = -2;
             object.scene.position.z = -2;
             mixer.current = new THREE.AnimationMixer(object.scene);
-            let action = mixer.current.clipAction(object.animations[15]);
+            action = mixer.current.clipAction(object.animations[15]);
             action.play();
             scene.add(object.scene);
             switcher.current = 1;
@@ -224,7 +213,7 @@ const HomeScreen = () => {
                     .repeat
                     .set(2, 2);
             });
-        let floorBump = new THREE
+        /*let floorBump = new THREE
             .TextureLoader(manager)
             .load('sunbump.png', () => {
                 floorTexture.wrapS = THREE.RepeatWrapping;
@@ -232,14 +221,12 @@ const HomeScreen = () => {
                 floorTexture
                     .repeat
                     .set(2, 2);
-            });
+            });*/
         let geometrySphere = new THREE.SphereGeometry(7, 25, 25);
-        let materialSphere = new THREE.MeshLambertMaterial({map: floorTexture, alphaTest: 0.1, bumpMap: floorBump, bumpScale: 0.01});
+        let materialSphere = new THREE.MeshLambertMaterial({map: floorTexture, alphaTest: 0.1});
         let sphere = new THREE.Mesh(geometrySphere, materialSphere);
-        sphere.position.x = 0;
-        sphere.position.y = -9;
-        sphere.position.z = -2;
         sphere.rotation.x = 1;
+        sphere.position.set(0, -9, -2);
         scene.add(sphere);
         const textu = new THREE
             .TextureLoader(manager)
@@ -248,11 +235,10 @@ const HomeScreen = () => {
         scene.background = textu;
         //TREE
         const treeLoader = new GLTFLoader(manager);
-        treeLoader.load('mytree.glb', (tree) => {
-            tree.scene.position.x = 0;
-            tree.scene.position.y = -2.1;
-            tree.scene.position.z = -3.2;
+        treeLoader.load('mytree2.glb', (tree) => {
+            tree.scene.position.set(0, -2.1, -3.2);
             tree.scene.rotation.x = -0.2;
+            tree.scene.rotation.y = -0.4;
             tree.scene
             .scale.set(0.5, 0.5, 0.5);
             scene.add(tree.scene);
@@ -260,26 +246,33 @@ const HomeScreen = () => {
 
         //GRASS
         //USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
-        const grassLoader = new GLTFLoader(manager);
-        for(let i = 0; i < 10; i++){
+        /*const grassLoader = new GLTFLoader(manager);
+        let zRotationNewRadius;
+        let treeRotationZ;
+        let grassRotationX;
+        let z;
+        let grassPositionY;
+        for(let i = 0; i < 4; i++){
+        // eslint-disable-next-line no-loop-func
         grassLoader.load('grassColor.glb', (grass) => {
-            grass.scene.position.x = Math.floor(Math.random() * 3) -0.5 ; //RANDOM NUMBER BETWEEN -7 AND 7
+            grass.scene.position.x = Math.floor(Math.random() * 3) -0.5 ;
             grass.scene.scale.set(0.14, 0.14, 0.14)
-            let zRotationNewRadius = Math.sqrt(49 - (grass.scene.position.x * grass.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
-            let treeRotationZ = Math.asin(grass.scene.position.x / 7); //SPHERE RADIUS = 7
-            let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+            zRotationNewRadius = Math.sqrt(49 - (grass.scene.position.x * grass.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+            treeRotationZ = Math.asin(grass.scene.position.x / 7); //SPHERE RADIUS = 7
+            z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
             grass.scene.rotation.z = -treeRotationZ;
             grass.scene.position.z = -z - 2;
 
-            let grassRotationX = grassRotationAngle.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
+            grassRotationX = grassRotationAngle.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
             grass.scene.rotation.x = grassRotationX;
 
-            let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+            grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
             grass.scene.position.y = grassPositionY - 9;
             scene.add(grass.scene);
             angleSphereForgrass.current+=0.001;
             grassRotationAngle.current-=0.001;
         })
+        }*/
 
         //media queries
         let phoneViewCheck = (e)=>{
@@ -297,26 +290,26 @@ const HomeScreen = () => {
         phoneViewCheck(window.matchMedia("(max-width: 700px)"));
         window.matchMedia("(max-width: 700px)").addEventListener('change', phoneViewCheck);
 
-    }
 
         renderer.setSize(width, height)
         canvas
             .current
             .appendChild(renderer.domElement)
+        let delta;
         const animate = () => {
-            let delta = clock.getDelta();
+            delta = clock.getDelta();
             if (switcher.current === 1) {
                 mixer
                     .current
                     .update(delta)
             }
             renderer.render(scene, camera.current)
-            window.requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
         }
         animate()
         //CHECK IF MODELS ARE LOADED
         percentage.current.innerText = "0 %";
-        let array = [
+        const array = [
             "Loading Existential Buffer", "Setting Universal Physical Constants",
             "Modeling Object Components",
              "Gathering Particle Sources", "I'm testing your patience",
@@ -333,11 +326,11 @@ const HomeScreen = () => {
                     percentage.current.innerText = "100%";
                 }
         }
-            manager.onLoad = ()=>{
-                percentage.current.innerText = "100%";
-                        fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
-                        fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
-            }
+        manager.onLoad = ()=>{
+            percentage.current.innerText = "100%";
+                    fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
+                    fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+        }
     }
 })
      //TRACK MOUSE MOVEMENT AND ROTATE camera

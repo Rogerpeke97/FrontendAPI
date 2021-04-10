@@ -151,11 +151,11 @@ const Game = () => {
             textu.minFilter = THREE.LinearFilter;
             scene.background = textu;
 
-            //TREES FOR DEBUGGING DEACTIVATED
+            //TREES
             trees.current = []
             const treeLoader = new GLTFLoader(manager);
             for (let j = 0; j <= 15; j++) {
-                treeLoader.load('mytree.glb', (tree) => {
+                treeLoader.load('mytree2.glb', (tree) => {
                     trees
                     .current
                     .push(tree);

@@ -16,6 +16,21 @@ let style = {
         minWidth: '100%',
         maxWidth: '100%',
         maxHeight: "100vh"
+    },
+    loading_bar : {
+        width: "300px",
+        marginTop: "2%",
+        zIndex: "2",
+        height: "30px",
+        background: "black",
+        boxShadow: "5px 5px 15px 5px black"
+    },
+    progress_bar: {
+        display: "grid",
+        transition: "all 0.5s ease-out",
+        width: "0%",
+        height: "30px",
+        background: "darkblue"
     }
 }
 
@@ -53,6 +68,7 @@ const Game = () => {
     let bar1 = useRef(0);
     let bar2 = useRef(0);
     let bar3 = useRef(0);
+    let progress_bar = useRef(0);
     useEffect(() => {
         if (componentLoaded === false) {
             health.current.innerText = `x${isHeartDead.current}`;
@@ -613,25 +629,20 @@ const Game = () => {
             animate()
             //CHECK IF MODELS ARE LOADED
             percentage.current.innerText = "0 %";
-            const array = [
-                "Loading Existential Buffer", "Setting Universal Physical Constants",
-                "Modeling Object Components",
-                 "Gathering Particle Sources", "I'm testing your patience",
-                "Reconfoobling energymotron...",
-                "I'm sorry for being so slow",
-                "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
-                 ]
         manager.onProgress = ()=>{
                 if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
-                    loadingScreenMessages.current.innerText =  array[Math.floor(Math.random() * array.length)];
+                    loadingScreenMessages.current.innerText = "Loading your experience...";
                     percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
+                    progress_bar.current.style.width = (percentage.current.innerText).replace(' ', '');
                 }
                 else{
                     percentage.current.innerText = "100%";
+                    progress_bar.current.style.width = percentage.current.innerText;
                 }
         }
         manager.onLoad = ()=>{
             percentage.current.innerText = "100%";
+            progress_bar.current.style.width = percentage.current.innerText;
             fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
             angleSphereForTrees.current = [0, 0];
             fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
@@ -739,6 +750,9 @@ const Game = () => {
                     <span ref={percentage}></span>
                 </div>
                 <div className= "messages" ref={loadingScreenMessages}></div>
+                <div style={style.loading_bar} >
+                    <div style={style.progress_bar} ref={progress_bar}></div>
+                </div>
             </div>
         </div>
     )

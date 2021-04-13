@@ -65,6 +65,21 @@ let style = {
         maxHeight: "100vh", 
         maxWidth: "100vw",
     },
+    loading_bar : {
+        width: "300px",
+        marginTop: "2%",
+        zIndex: "2",
+        height: "30px",
+        background: "black",
+        boxShadow: "5px 5px 15px 5px black"
+    },
+    progress_bar: {
+        display: "grid",
+        transition: "all 0.5s ease-out",
+        width: "0%",
+        height: "30px",
+        background: "darkblue"
+    }
 }
 
 const Login = () => {
@@ -99,6 +114,7 @@ const Login = () => {
     let fadeScreen = useRef(0);
     const [componentLoaded,
         setComponentLoaded] = useState(null);
+    let progress_bar = useRef(0);
 
 
     let validatorEmail = (value)=>{
@@ -367,27 +383,22 @@ const Login = () => {
         animate()
                 //CHECK IF MODELS ARE LOADED
         percentage.current.innerText = "0 %";
-        let array = [
-            "Loading Existential Buffer", "Setting Universal Physical Constants",
-            "Modeling Object Components",
-             "Gathering Particle Sources", "I'm testing your patience",
-            "Reconfoobling energymotron...",
-            "I'm sorry for being so slow",
-            "UwU", "hey there buddy chum pal friend buddy pal chum bud friend fella bruther amigo pal buddy friend chummy chum chum pal"
-             ]
         manager.onProgress = ()=>{
                 if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
-                loadingScreenMessages.current.innerText =  array[Math.floor(Math.random() * array.length)];
+                loadingScreenMessages.current.innerText = "Loading your experience...";
                 percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
+                progress_bar.current.style.width = (percentage.current.innerText).replace(' ', '');
                 }
                 else{
                     percentage.current.innerText = "100%";
+                    progress_bar.current.style.width = percentage.current.innerText;
                 }
         }
             manager.onLoad = ()=>{
+                progress_bar.current.style.width = percentage.current.innerText;
                 percentage.current.innerText = "100%";
-                        fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
-                        fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+                fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
+                fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
             }
     }
     },[componentLoaded]);
@@ -726,6 +737,9 @@ const Login = () => {
                     <span ref={percentage}></span>
                 </div>
                 <div className= "messages" ref={loadingScreenMessages}></div>
+                <div style={style.loading_bar} >
+                    <div style={style.progress_bar} ref={progress_bar}></div>
+                </div>
             </div>
         </div>
     )

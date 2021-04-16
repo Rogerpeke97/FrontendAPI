@@ -586,7 +586,7 @@ const HomeScreen = () => {
             <div style={style.footer}>
                 <div style={{flex: "1", display: "grid", alignItems: "center", margin: "2%"}}>
                     <div>Ignacio Martin Diaz</div>     
-                    <div>Portfolio: <a href="https://rogerpeke97.github.io/portfolio" style={{color: "white"}} rel="noopener noreferrer" target="_blank">https://rogerpeke97.github.io/portfolio</a></div>
+                    <div>Portfolio: <a href="https://ignaciodiaz.netlify.app/" style={{color: "white"}} rel="noopener noreferrer" target="_blank">https://ignaciodiaz.netlify.app/</a></div>
                     <div style={{display: "flex"}}>
                     <FontAwesomeIcon icon={faMapMarked} style={{marginRight: "1%"}}/> 
                     <div>Buenos Aires, Argentina</div>

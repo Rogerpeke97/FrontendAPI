@@ -69,6 +69,7 @@ const Game = () => {
     let bar2 = useRef(0);
     let bar3 = useRef(0);
     let progress_bar = useRef(0);
+    let grass_geometry = useRef(0);
     useEffect(() => {
         if (componentLoaded === false) {
             health.current.innerText = `x${isHeartDead.current}`;
@@ -199,28 +200,41 @@ const Game = () => {
                     angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
                 })
             }
-
+            const dummy = new THREE.Object3D();
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
-            const grassLoader = new GLTFLoader(manager);
-            for (let i = 0; i < 15; i++) {
+            const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
                 grassLoader.load('grassColor.glb', (grass) => {
-                    grass.scene.scale.set(0.3, 0.3, 0.3);
-                    grass.scene.position.x = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
-                    let zRotationNewRadius = Math.sqrt(49 - (grass.scene.position.x * grass.scene.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
-                    let treeRotationZ = Math.asin(grass.scene.position.x / 7); //SPHERE RADIUS = 7
-                    let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
-                    grass.scene.rotation.z = -treeRotationZ;
-                    grass.scene.position.z = -z;
-
-                    let grassRotationX = -angleSphereForgrass.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
-                    grass.scene.rotation.x = grassRotationX;
-
-                    let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
-                    grass.scene.position.y = grassPositionY;
-                    scene.add(grass.scene);
-                    angleSphereForgrass.current = angleSphereForgrass.current + 0.00813333333;
+                    grass.scene.traverse( ( child )=>{
+                        if ( child.isMesh ) {
+                            grass_geometry.current = child;
+                            console.log(child);
+                        }
+                    });
+                    console.log(grass);
+                    const mesh_material = new THREE.MeshStandardMaterial({color: 0xff0000});
+                    let grass_instanced_mesh = new THREE.InstancedMesh(grass_geometry.current.geometry, mesh_material, 15);
+                    scene.add(grass_instanced_mesh); 
+                    for(let i = 0; i < 15; i++){
+                        dummy.scale.set(0.3, 0.3, 0.3);
+                        dummy.position.x = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
+                        let zRotationNewRadius = Math.sqrt(49 - (dummy.position.x * dummy.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        let treeRotationZ = Math.asin(dummy.position.x / 7); //SPHERE RADIUS = 7
+                        let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+                        dummy.rotation.z = -treeRotationZ;
+                        dummy.position.z = -z;
+    
+                        let grassRotationX = -angleSphereForgrass.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
+                        dummy.rotation.x = grassRotationX;
+    
+                        let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+                        dummy.position.y = grassPositionY;
+                        angleSphereForgrass.current = angleSphereForgrass.current + 0.00813333333;
+                        dummy.updateMatrix();
+                        grass_instanced_mesh.setMatrixAt( i, dummy.matrix );
+                    }
+                    grass_instanced_mesh.instanceMatrix.needsUpdate = true;
                 })
-            }
+
 
             const loader = new GLTFLoader(manager)
             loader.load("knight.gltf", function (object) {

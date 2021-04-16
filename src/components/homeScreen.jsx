@@ -115,6 +115,8 @@ const HomeScreen = () => {
     let progress_bar = useRef(0);
     useEffect(() => {
         if(componentLoaded === false){
+        let scrollX = window.scrollX;
+        document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
         let height = canvas.current.clientHeight;
         let width =  document.documentElement.clientWidth;
         let manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
@@ -165,6 +167,8 @@ const HomeScreen = () => {
                 renderer.setSize(width, height);
                 camera.current.aspect = width / height;
                 camera.current.updateProjectionMatrix();
+                let scrollX = window.scrollX;
+                document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
             }
         });
 

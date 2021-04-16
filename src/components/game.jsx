@@ -31,6 +31,24 @@ let style = {
         width: "0%",
         height: "30px",
         background: "darkblue"
+    },
+    technologies_holder: {
+        display: "flex",
+        maxWidth: "100%",
+        maxHeight: "100%",
+        height: "50px",
+        width: "50px",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+    },
+    technologies_images: {
+        flex: "25%",
+        maxHeight: "100%",
+        width: "25%",
+        objectFit: "contain",
+        zIndex: "0",
+        transform: "rotateY(180deg)"
     }
 }
 
@@ -72,6 +90,8 @@ const Game = () => {
     let grass_geometry = useRef(0);
     useEffect(() => {
         if (componentLoaded === false) {
+            let scrollX = window.scrollX;
+            document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
             health.current.innerText = `x${isHeartDead.current}`;
             animationsAdded.current = null;
             let height = canvas.current.clientHeight
@@ -148,6 +168,8 @@ const Game = () => {
             })*/
             window.addEventListener('resize', () => {
                 if (canvas.current !== null) {
+                    let scrollX = window.scrollX;
+                    document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
                     width = document.documentElement.clientWidth;
                     height = canvas.current.clientHeight
                     renderer.setSize(width, height);
@@ -204,13 +226,11 @@ const Game = () => {
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
             const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
                 grassLoader.load('grassColor.glb', (grass) => {
-                    grass.scene.traverse( ( child )=>{
-                        if ( child.isMesh ) {
+                    grass.scene.traverse((child)=>{
+                        if (child.isMesh) {
                             grass_geometry.current = child;
-                            console.log(child);
                         }
                     });
-                    console.log(grass);
                     const mesh_material = new THREE.MeshStandardMaterial({color: 0xff0000});
                     let grass_instanced_mesh = new THREE.InstancedMesh(grass_geometry.current.geometry, mesh_material, 15);
                     scene.add(grass_instanced_mesh); 
@@ -684,7 +704,9 @@ const Game = () => {
                      minWidth: "200px", maxWidth: "200px", display: "flex",
                      top: "6.5rem", zIndex: "5"
                      }}>
-                         <div className= "heart"></div>
+                         <div style={style.technologies_holder}>
+                            <img src="/heart.svg" alt="Threejs" style={style.technologies_images}></img>
+                         </div>
                          <div ref={health} style={{width: "50px", height: "50px", display: "grid", fontSize: "120%", color: "white", textAlign: "center", alignItems: "center"}}></div>
                      </div>
                 <div style={{

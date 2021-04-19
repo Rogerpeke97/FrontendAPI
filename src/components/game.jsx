@@ -6,6 +6,7 @@ import { Lensflare, LensflareElement } from 'three/examples/jsm/objects/Lensflar
 import '../App.css';
 import TWEEN from '@tweenjs/tween.js';
 import axios from 'axios';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
 
 let style = {
@@ -98,13 +99,13 @@ const Game = () => {
             let width = canvas.current.clientWidth
             const scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0xDCDBDF, 0.10);
-            //scene.add(helper) ONLY FOR DEBUGGING
+            //scene.add(helper) //ONLY FOR DEBUGGING
             camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
             const renderer = new THREE.WebGLRenderer();
-            /*let controls = new OrbitControls(camera.current, renderer.domElement);
+            let controls = new OrbitControls(camera.current, renderer.domElement);
             controls
                 .target
-                .set(0, 0, 0);*/
+                .set(0, 0, 0);
             const manager = new THREE.LoadingManager(); // WHEN MODELS ARE LOADED .onLoad will be called
             camera
                 .current
@@ -191,7 +192,7 @@ const Game = () => {
             scene.background = textu;
 
             //TREES
-            trees.current = []
+            /*trees.current = []
             const treeLoader = new GLTFLoader(manager);
             for (let j = 0; j <= 15; j++) {
                 treeLoader.load('mytree2.glb', (tree) => {
@@ -221,7 +222,7 @@ const Game = () => {
                     scene.add(tree.scene);
                     angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
                 })
-            }
+            }*/
             const dummy = new THREE.Object3D();
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
             const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
@@ -256,7 +257,7 @@ const Game = () => {
                 })
 
 
-            const loader = new GLTFLoader(manager)
+            /*const loader = new GLTFLoader(manager)
             loader.load("knight.gltf", function (object) {
                 object.scene.position.x = 0;
                 object.scene.position.y = 7; // CIRCLE RADIUS
@@ -293,7 +294,7 @@ const Game = () => {
                 mixer
                 .current
                 .clipAction(obj.current.animations[0]); // JUMP ANIMATION
-            },);
+            },);*/
 
             // RUNNING ANIMATION AND MOVEMENT IMPLEMENTING EQUATION IN PARAMETRIC FORM TO
             // FIND THE COORDINATES OF THE CIRCLE SO THAT THE CHARACTER MOVES ALONG THE
@@ -625,7 +626,7 @@ const Game = () => {
             setInterval(() => jump(), 20);
 
             //TRYING A SPHERE
-            let floorTexture = new THREE
+            /*let floorTexture = new THREE
                 .TextureLoader(manager)
                 .load('homescreenGrass.jpg', () => {
                     floorTexture.wrapS = THREE.RepeatWrapping;
@@ -633,7 +634,7 @@ const Game = () => {
                     floorTexture
                         .repeat
                         .set(2, 2);
-                });
+                });*/
             /*let floorBump = new THREE
                 .TextureLoader(manager)
                 .load('sunbump.png', () => {
@@ -643,12 +644,135 @@ const Game = () => {
                         .repeat
                         .set(2, 2);
                 });*/
-            let geometrySphere = new THREE.SphereBufferGeometry(7, 50, 50);
+            /*let geometrySphere = new THREE.SphereBufferGeometry(7, 50, 50);
             let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture});
             let sphere = new THREE.Mesh(geometrySphere, materialSphere);
             sphere.position.set(0, 0, 0);
             sphere.rotation.z = 1;
-            scene.add(sphere);
+            scene.add(sphere);*/
+            
+            const geometry = new THREE.BufferGeometry();
+            // create a simple square shape. We duplicate the top left and bottom right
+            // vertices because each vertex needs to appear once per triangle.
+            let array_to_transform = [
+                0.0,0.0,0.0,//Front
+                1.0,0.0,0.0,
+                1.0,1.0,0.0,
+                1.0,1.0,0.0,
+                0.0,1.0,0.0,
+                0.0,0.0,0.0,
+            ]
+
+            const transform_matrix = (arr, size, angle)=>{
+                let new_arr = [];
+                angle = angle * Math.PI/180;
+                //FRONT TO LEFT 
+                for(let j = 0; j < 2; j++){
+                    for(let i = 2; i < arr.length * 2; i+=3){
+                        if(j === 0){
+                            new_arr.push(
+                                arr[i-2] * Math.cos(angle) - arr[i] * Math.sin(angle), arr[i-1],
+                                arr[i-2] * Math.sin(angle) + arr[i] * Math.cos(angle)
+                            )
+                        }
+                        else{
+                            new_arr.push(
+                                arr[i-2] * Math.cos(angle) - arr[i] * Math.sin(angle) + size, arr[i-1],
+                                arr[i-2] * Math.sin(angle) + arr[i] * Math.cos(angle)
+                            )
+                        }
+                    }
+                }
+                for(let j = 0; j < 2; j++){
+                    for(let i = 2; i < arr.length * 2; i+=3){
+                        if(j === 0){
+                            new_arr.push(
+                                arr[i-2], arr[i-1] * Math.cos(angle) - arr[i] * Math.sin(angle) + size,
+                                arr[i-1] * Math.sin(angle) + arr[i] * Math.cos(angle)
+                            ); 
+                        }
+                        else{
+                            new_arr.push(
+                                arr[i-2], arr[i-1] * Math.cos(angle) - arr[i] * Math.sin(angle),
+                                arr[i-1] * Math.sin(angle) + arr[i] * Math.cos(angle)
+                            );  
+                        }
+                    }
+                }//BOTTOM
+                for(let j = 0; j < 2; j++){
+                    for(let i = 2; i < arr.length * 2; i+=3){
+                        if(j === 0){
+                            new_arr.push(
+                                arr[i-2], arr[i-1],
+                                arr[i] + size
+                            ); 
+                        }
+                        else{
+                            new_arr.push(
+                                arr[i-2], arr[i-1],
+                                arr[i]
+                            );  
+                        }
+                    }
+                }//BACK
+                return new_arr;
+            }
+
+
+            /*const vertices= new Float32Array([
+                0.0,0.0,0.0,//Front
+                1.0,0.0,0.0,
+                1.0,1.0,0.0,
+                1.0,1.0,0.0,
+                0.0,1.0,0.0,
+                0.0,0.0,0.0,
+
+                0.0,0.0,0.0,//Left
+                0.0,0.0,1.0,
+                0.0,1.0,1.0,
+                0.0,1.0,1.0,
+                0.0,1.0,0.0,
+                0.0,0.0,0.0,
+                
+                0.0,0.0,1.0,//Back
+                1.0,0.0,1.0,
+                1.0,1.0,1.0,
+                1.0,1.0,1.0,
+                0.0,1.0,1.0,
+                0.0,0.0,1.0,
+
+                1.0,0.0,0.0,//Right
+                1.0,0.0,1.0,
+                1.0,1.0,1.0,
+                1.0,1.0,1.0,
+                1.0,1.0,0.0,
+                1.0,0.0,0.0,
+
+                0.0,1.0,0.0,//Top
+                1.0,1.0,0.0,
+                1.0,1.0,1.0,
+                1.0,1.0,1.0,
+                0.0,1.0,1.0,
+                0.0,1.0,0.0,
+
+                0.0,0.0,0.0,//Bottom
+                1.0,0.0,0.0,
+                1.0,0.0,1.0,
+                1.0,0.0,1.0,
+                0.0,0.0,1.0,
+                0.0,0.0,0.0
+
+            ]);*/
+
+
+
+            const vertices= new Float32Array(transform_matrix(array_to_transform, 1, 90));
+            
+            // itemSize = 3 because there are 3 values (components) per vertex
+            geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+            const material = new THREE.MeshBasicMaterial( { color: 'blue', side: THREE.DoubleSide, vertexColors: false } );
+            const mesh = new THREE.Mesh( geometry, material );
+            scene.add(mesh);
 
             const animate = () => {
                 let delta = clock.getDelta();
@@ -720,7 +844,7 @@ const Game = () => {
                 </div>
             </div>
             <div style={style.canvas} ref={canvas}></div>
-            <div style={{position: "absolute", display: "grid", textAlign: "center", height: "125px", width: "200px",
+            <div style={{position: "absolute", display: "none", textAlign: "center", height: "125px", width: "200px",
             left: "50%", top: "50%", marginLeft: "-100px", marginTop: "-67.5px", background: "brown", color: "white", zIndex: "2",
             borderRadius: "7px",
             boxShadow: "0px 10px 21px 0px rgba(50, 50, 50, 0.75)", alignContent: "center", transition: "all 0.5s ease-out", fontWeight: "bold",

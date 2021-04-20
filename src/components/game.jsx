@@ -169,8 +169,6 @@ const Game = () => {
             })*/
             window.addEventListener('resize', () => {
                 if (canvas.current !== null) {
-                    let scrollX = window.scrollX;
-                    document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
                     width = document.documentElement.clientWidth;
                     height = canvas.current.clientHeight
                     renderer.setSize(width, height);
@@ -178,6 +176,8 @@ const Game = () => {
                     camera
                         .current
                         .updateProjectionMatrix();
+                    scrollX = window.scrollX;
+                    document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
                 }
             });
 
@@ -654,21 +654,50 @@ const Game = () => {
             const geometry = new THREE.BufferGeometry();
             // create a simple square shape. We duplicate the top left and bottom right
             // vertices because each vertex needs to appear once per triangle.
-            let array_to_transform = [
+            const array_to_transform = [
                 0.0,0.0,0.0,//Front
-                1.0,0.0,0.0,
-                1.0,1.0,0.0,
-                1.0,1.0,0.0,
-                0.0,1.0,0.0,
-                0.0,0.0,0.0,
+                0.1,0.0,0.0,
+                0.1,0.1,0.0,
+                0.1,0.1,0.0,
+                0.0,0.1,0.0,
+                0.0,0.0,0.0
             ]
+            const increase_vertex_count = (arr)=>{
+                let new_arr = [
+                    0.0,0.0,0.0,//Front
+                    0.1,0.0,0.0,
+                    0.1,0.1,0.0,
+                    0.1,0.1,0.0,
+                    0.0,0.1,0.0,
+                    0.0,0.0,0.0
+                ];
+                let count = 0;
+                let increase_y = 0;
+                for(let j = 0; j < 64; j++){
+                    for(let i = 0; i < arr.length; i+=3){
+                        if(count > 8){
+                            new_arr.push(
+                                arr[i] + 0.1 * count, arr[i+1] + increase_y, arr[i+2] 
+                            )
+                            count = 0;
+                            increase_y+=0.1;
+                        }
+                        else{
+                            new_arr.push(
+                                arr[i] + 0.1 * count, arr[i+1] + increase_y, arr[i+2] 
+                            )
+                        }
+                    }
+                }
+                return new_arr;
+            }
 
             const transform_matrix = (arr, size, angle)=>{
                 let new_arr = [];
                 angle = angle * Math.PI/180;
                 //FRONT TO LEFT 
                 for(let j = 0; j < 2; j++){
-                    for(let i = 2; i < arr.length * 2; i+=3){
+                    for(let i = 2; i < arr.length; i+=3){
                         if(j === 0){
                             new_arr.push(
                                 arr[i-2] * Math.cos(angle) - arr[i] * Math.sin(angle), arr[i-1],
@@ -684,7 +713,7 @@ const Game = () => {
                     }
                 }
                 for(let j = 0; j < 2; j++){
-                    for(let i = 2; i < arr.length * 2; i+=3){
+                    for(let i = 2; i < arr.length; i+=3){
                         if(j === 0){
                             new_arr.push(
                                 arr[i-2], arr[i-1] * Math.cos(angle) - arr[i] * Math.sin(angle) + size,
@@ -700,7 +729,7 @@ const Game = () => {
                     }
                 }//BOTTOM
                 for(let j = 0; j < 2; j++){
-                    for(let i = 2; i < arr.length * 2; i+=3){
+                    for(let i = 2; i < arr.length; i+=3){
                         if(j === 0){
                             new_arr.push(
                                 arr[i-2], arr[i-1],
@@ -765,14 +794,22 @@ const Game = () => {
             ]);*/
 
 
-
-            const vertices= new Float32Array(transform_matrix(array_to_transform, 1, 90));
+            const vertices= new Float32Array(transform_matrix(increase_vertex_count(array_to_transform), 0.1, 90));
             
             // itemSize = 3 because there are 3 values (components) per vertex
             geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+            //geometry.setAttribute( 'normals', new THREE.BufferAttribute( new Uint32Array( normals ), 1 ) );
             const material = new THREE.MeshBasicMaterial( { color: 'blue', side: THREE.DoubleSide, vertexColors: false } );
             const mesh = new THREE.Mesh( geometry, material );
+            console.log(geometry.attributes.position);
+            /*for (let i = 0; i < geometry.attributes.position.array.length; i += 3) {
+                const v = new THREE.Vector3(geometry.attributes.position.array[i], geometry.attributes.position.array[i + 1], geometry.attributes.position.array[i + 2]).normalize();
+                geometry.attributes.position.array[i] = v.x
+                geometry.attributes.position.array[i + 1] = v.y
+                geometry.attributes.position.array[i + 2] = v.z
+            }*/
             scene.add(mesh);
+  
 
             const animate = () => {
                 let delta = clock.getDelta();

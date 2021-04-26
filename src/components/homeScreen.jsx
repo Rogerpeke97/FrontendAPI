@@ -7,6 +7,7 @@ import {Lensflare, LensflareElement} from 'three/examples/jsm/objects/Lensflare.
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons'
 import { faWindowClose, faQuestionCircle, faMapMarked } from '@fortawesome/free-solid-svg-icons'
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
 
 
@@ -113,6 +114,7 @@ const HomeScreen = () => {
     let musicExplain = useRef(0);
     const [smartphoneView, setSmartphoneView] = useState(false);
     let progress_bar = useRef(0);
+    let grass_geometry = useRef(0);
     useEffect(() => {
         if(componentLoaded === false){
         let scrollX = window.scrollX;
@@ -122,8 +124,13 @@ const HomeScreen = () => {
         let manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
+
         camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true } );
+        let controls = new OrbitControls(camera.current, renderer.domElement);
+        controls
+            .target
+            .set(0, 0, 0);
         camera
             .current.position
             .set(9, -0.5, -7);
@@ -167,30 +174,30 @@ const HomeScreen = () => {
                 renderer.setSize(width, height);
                 camera.current.aspect = width / height;
                 camera.current.updateProjectionMatrix();
-                let scrollX = window.scrollX;
+                scrollX = window.scrollX;
                 document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
             }
         });
 
         //// PARTICLES
-        let particleCount = 750;
-        let particleDistance = 53;
+        const particleCount = 750;
+        const particleDistance = 53;
         let particles = new THREE.BufferGeometry();
-        let texture = new THREE
-            .TextureLoader()
+        const texture = new THREE
+            .TextureLoader(manager)
             .load('leaftexture.png');
-        let pMaterial = new THREE.PointsMaterial({
+        const pMaterial = new THREE.PointsMaterial({
             color: 'green', size: 0.3, map: texture, alphaTest: 0.1, // removes black squares,
             blending: THREE.CustomBlending,
             transparent: true
         });
 
         let positions = [];
-
+        let posX, posY, posZ;
         for (let i = 0; i < 750; i++) {
-            let posX = (Math.random() - 0.5) * particleDistance;
-            let posY = (Math.random() - 0.5) * particleDistance;;
-            let posZ = (Math.random() - 0.5) * particleDistance;;
+            posX = (Math.random() - 0.5) * particleDistance;
+            posY = (Math.random() - 0.5) * particleDistance;;
+            posZ = (Math.random() - 0.5) * particleDistance;;
             positions.push(posX, posY, posZ);
         }
         particles.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -206,7 +213,6 @@ const HomeScreen = () => {
                 }
                 particleSys.geometry.attributes.position.needsUpdate = true;
             }
-            renderer.render(scene, camera.current)
         })
         scene.add(particleSys)
         // CHARACTER ADDON FOR MAIN MENU
@@ -224,9 +230,9 @@ const HomeScreen = () => {
         },);
         // setTimeout(()=>mixer.clipAction(obj.animations[1]).play(), 8000)// WORKS
         // TRYING A SPHERE
-        let floorTexture = new THREE
-            .TextureLoader()
-            .load('homescreenGrass.jpg', (manager) => {
+        const floorTexture = new THREE
+            .TextureLoader(manager)
+            .load('homescreenGrass.jpg', () => {
                 floorTexture.wrapS = THREE.RepeatWrapping;
                 floorTexture.wrapT = THREE.RepeatWrapping;
                 floorTexture
@@ -242,9 +248,9 @@ const HomeScreen = () => {
                     .repeat
                     .set(2, 2);
             });*/
-        let geometrySphere = new THREE.SphereGeometry(7, 25, 25);
-        let materialSphere = new THREE.MeshLambertMaterial({map: floorTexture, alphaTest: 0.1});
-        let sphere = new THREE.Mesh(geometrySphere, materialSphere);
+        const geometrySphere = new THREE.SphereGeometry(7, 25, 25);
+        const materialSphere = new THREE.MeshLambertMaterial({map: floorTexture, alphaTest: 0.1});
+        const sphere = new THREE.Mesh(geometrySphere, materialSphere);
         sphere.rotation.x = 1;
         sphere.position.set(0, -9, -2);
         scene.add(sphere);
@@ -255,16 +261,51 @@ const HomeScreen = () => {
         scene.background = textu;
         //TREE
         const treeLoader = new GLTFLoader(manager);
-        treeLoader.load('mytree2.glb', (tree) => {
+        treeLoader.load('new_tree.glb', (tree) => {
             tree.scene.position.set(0, -2.1, -3.2);
             tree.scene.rotation.x = -0.2;
             tree.scene.rotation.y = -0.4;
-            tree.scene
-            .scale.set(0.5, 0.5, 0.5);
+
             scene.add(tree.scene);
         })
 
         //GRASS
+
+        const dummy = new THREE.Object3D();
+        let zRotationNewRadius,treeRotationZ,grassRotationX, z, grassPositionY;
+        //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
+        const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
+            grassLoader.load('grassColor.glb', (grass) => {
+                grass.scene.traverse((child)=>{
+                    if (child.isMesh) {
+                        grass_geometry.current = child;
+                    }
+                });
+            const mesh_material = new THREE.MeshStandardMaterial({color: 0xff0000});
+            const grass_instanced_mesh = new THREE.InstancedMesh(grass_geometry.current.geometry, mesh_material, 12);
+            scene.add(grass_instanced_mesh); 
+            for(let i = 0; i < 12; i++){
+                dummy.position.x = Math.floor(Math.random() * 3) + 1;
+                zRotationNewRadius = Math.sqrt(49 - (dummy.position.x * dummy.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                treeRotationZ = Math.asin(dummy.position.x / 7); //SPHERE RADIUS = 7
+                z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+                dummy.rotation.z = -treeRotationZ;
+                dummy.position.z = -z -2;
+    
+                grassRotationX = grassRotationAngle.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
+                dummy.rotation.x = grassRotationX;
+    
+                grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+                dummy.position.y = grassPositionY - 9;
+                angleSphereForgrass.current+=0.001;
+                grassRotationAngle.current-=0.001;
+                dummy.updateMatrix();
+                grass_instanced_mesh.setMatrixAt( i, dummy.matrix );
+                
+            }
+            grass_instanced_mesh.instanceMatrix.needsUpdate = true;
+        })
+
         //USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
         /*const grassLoader = new GLTFLoader(manager);
         let zRotationNewRadius;

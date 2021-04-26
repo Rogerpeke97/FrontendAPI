@@ -299,7 +299,7 @@ const Login = () => {
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
         camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({antialias: true});
         camera.current
             .position
             .set(0, 0, 2);

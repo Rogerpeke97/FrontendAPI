@@ -1,4 +1,4 @@
-import {useRef, useEffect, useState} from 'react'
+import {useRef, useEffect, useState, Children} from 'react'
 import * as THREE from "three";
 //import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -7,6 +7,8 @@ import '../App.css';
 import TWEEN from '@tweenjs/tween.js';
 import axios from 'axios';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {BufferGeometryUtils} from 'three/examples/jsm/utils/BufferGeometryUtils';
+
 
 
 let style = {
@@ -98,10 +100,10 @@ const Game = () => {
             let height = canvas.current.clientHeight
             let width = canvas.current.clientWidth
             const scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0xDCDBDF, 0.10);
+            //scene.fog = new THREE.FogExp2(0xDCDBDF, 0.10);
             //scene.add(helper) //ONLY FOR DEBUGGING
             camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
-            const renderer = new THREE.WebGLRenderer();
+            const renderer = new THREE.WebGLRenderer({antialias: true});
             let controls = new OrbitControls(camera.current, renderer.domElement);
             controls
                 .target
@@ -120,12 +122,7 @@ const Game = () => {
             const textureFlare = new THREE.TextureLoader(manager);
             const textureFlare0 = textureFlare.load( 'lensflare0.png' );
 			const textureFlare3 = textureFlare.load( 'lensflare3.png' );
-            addLight( 0.55, 0.9, 0.5, 5000, 0, - 1000 );
-            addLight( 0.08, 0.8, 0.5, 0, 0, - 1000 );
-            addLight( 0.995, 0.5, 0.9, 5000, 5000, - 1000 );
-
-            function addLight( h, s, l, x, y, z ) {
-
+            const addLight = (h, s, l, x, y, z)=> {
                 const light = new THREE.PointLight( 0xffffff, 1.5, 2000 );
                 light.color.setHSL( h, s, l );
                 light.position.set( x, y, z );
@@ -139,6 +136,9 @@ const Game = () => {
                 lensflare.addElement( new LensflareElement( textureFlare3, 70, 1 ) );
                 light.add( lensflare );
             }
+            addLight( 0.55, 0.9, 0.5, 5000, 0, - 1000 );
+            addLight( 0.08, 0.8, 0.5, 0, 0, - 1000 );
+            addLight( 0.995, 0.5, 0.9, 5000, 5000, - 1000 );
             //MOON
             /*const moonLoader = new GLTFLoader(manager)
             moonLoader.load("moon.glb", function (object) {
@@ -192,62 +192,85 @@ const Game = () => {
             scene.background = textu;
 
             //TREES
-            /*trees.current = []
+            trees.current = []
+            let treeRotationX;
             const treeLoader = new GLTFLoader(manager);
-            for (let j = 0; j <= 15; j++) {
-                treeLoader.load('mytree2.glb', (tree) => {
-                    trees
-                    .current
-                    .push(tree);
-                    let newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
-                    tree
-                        .scene
-                        .scale
-                        .set(0.1, 0.1, 0.1);
-                    let zRotationNewRadius = Math.sqrt(49 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
-                    let z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
-                    // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE
-                    // RIGHT ROTATION AND Y POSITION AROUND THE SPHERE TREE ROTATION SIN ANGLE =
-                    // OPOSSITE OVER HYPOTHENUSE
-                    let treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
+            let trees_instanced_mesh;
+                let geometry_merged = new THREE.BufferGeometry();
+                let geometry_array = [];
+                let material_tree;
+                treeLoader.load('new_tree.glb', (tree) => {
+                    tree.scene.traverse((child)=>{
+                        if (child.isMesh) {
+                            geometry_array.push(child.geometry.clone().applyMatrix4(child.matrixWorld));
+                            material_tree =  child.material;
+                        }
+                    });
+                   
+                    geometry_merged = BufferGeometryUtils.mergeBufferGeometries(geometry_array);
+                    //geometry_merged.merge(child.geometry, child.matrix);
+                    //const mesh_material = new THREE.MeshStandardMaterial({color: 0xFFFFFF});
+                    trees_instanced_mesh = new THREE.InstancedMesh(geometry_merged, material_tree, 15);
+                       //trees_instanced_mesh.instanceMatrix.needsUpdate = true;
+                        //dummy_tree.add(tree_children[i]);
+                    scene.add(trees_instanced_mesh);
 
-                    let treeRotationX = -angleSphereForTrees.current * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)
+                    for (let j = 0; j < 15; j++) {
+                        let dummy_tree = new THREE.Object3D();
+                        dummy_tree.scale.set(0.1,0.1,0.1)
+                        newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
+                        zRotationNewRadius = Math.sqrt(49 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                        // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE
+                        // RIGHT ROTATION AND Y POSITION AROUND THE SPHERE TREE ROTATION SIN ANGLE =
+                        // OPOSSITE OVER HYPOTHENUSE
+                        treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
 
-                    //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
-                    let treePositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                        treeRotationX = -angleSphereForTrees.current * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)
 
-                    tree.scene.position.set(newX, treePositionY, -z);
-                    tree.scene.rotation.set(treeRotationX, tree.scene.rotation.y, -treeRotationZ);
+                        //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
+                        treePositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
 
-                    scene.add(tree.scene);
-                    angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
-                })
-            }*/
+                        dummy_tree.position.set(newX, treePositionY, -z);
+                        dummy_tree.rotation.set(treeRotationX, 5, -treeRotationZ);
+                        dummy_tree.updateMatrix();
+                        trees_instanced_mesh.setMatrixAt( j, dummy_tree.matrix );
+                        trees.current.push(dummy_tree)
+
+                        angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
+                }
+                trees_instanced_mesh.instanceMatrix.needsUpdate = true;
+                console.log(trees_instanced_mesh);
+            })
             const dummy = new THREE.Object3D();
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
             const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
                 grassLoader.load('grassColor.glb', (grass) => {
+                    grass
+                    .scene
+                    .scale
+                    .set(0.7, 0.7, 0.7);
                     grass.scene.traverse((child)=>{
                         if (child.isMesh) {
                             grass_geometry.current = child;
                         }
                     });
-                    const mesh_material = new THREE.MeshStandardMaterial({color: 0xff0000});
+                    const mesh_material = new THREE.MeshStandardMaterial({color: 'green'});
                     let grass_instanced_mesh = new THREE.InstancedMesh(grass_geometry.current.geometry, mesh_material, 15);
                     scene.add(grass_instanced_mesh); 
+                    let zRotationNewRadius, treeRotationZ, z, grassRotationX, grassPositionY;
                     for(let i = 0; i < 15; i++){
-                        dummy.scale.set(0.3, 0.3, 0.3);
-                        dummy.position.x = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
-                        let zRotationNewRadius = Math.sqrt(49 - (dummy.position.x * dummy.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
-                        let treeRotationZ = Math.asin(dummy.position.x / 7); //SPHERE RADIUS = 7
-                        let z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+                        dummy.position.x = Math.floor(Math.random() * 3) - 1; 
+                        zRotationNewRadius = Math.sqrt(47.61 - (dummy.position.x * dummy.position.x)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        treeRotationZ = Math.asin(dummy.position.x / 6.9); //SPHERE RADIUS = 7 **I added 6.9 because I wanted the grass to be a bit inside the sphere
+                        z = Math.sin(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
                         dummy.rotation.z = -treeRotationZ;
                         dummy.position.z = -z;
     
-                        let grassRotationX = -angleSphereForgrass.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
+                        grassRotationX = -angleSphereForgrass.current * (180 / Math.PI); //The grass rotation ON X AXIS (FORWARDS)
                         dummy.rotation.x = grassRotationX;
     
-                        let grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
+                        grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
                         dummy.position.y = grassPositionY;
                         angleSphereForgrass.current = angleSphereForgrass.current + 0.00813333333;
                         dummy.updateMatrix();
@@ -257,7 +280,7 @@ const Game = () => {
                 })
 
 
-            /*const loader = new GLTFLoader(manager)
+            const loader = new GLTFLoader(manager)
             loader.load("knight.gltf", function (object) {
                 object.scene.position.x = 0;
                 object.scene.position.y = 7; // CIRCLE RADIUS
@@ -294,7 +317,7 @@ const Game = () => {
                 mixer
                 .current
                 .clipAction(obj.current.animations[0]); // JUMP ANIMATION
-            },);*/
+            },);
 
             // RUNNING ANIMATION AND MOVEMENT IMPLEMENTING EQUATION IN PARAMETRIC FORM TO
             // FIND THE COORDINATES OF THE CIRCLE SO THAT THE CHARACTER MOVES ALONG THE
@@ -342,27 +365,27 @@ const Game = () => {
             let x, y, z, knightPosX, knightPosY, knightPosZ, object_positions;
             let characterHitByTree = (armorMan)=>{
                 trees.current.forEach((tree)=>{
-                    x = tree.scene.position.x;
+                    x = tree.position.x;
                     knightPosX = armorMan.position.x;
-                    y = tree.scene.position.y
+                    y = tree.position.y
                     knightPosY = armorMan.position.y;
-                    z = tree.scene.position.z;
+                    z = tree.position.z;
                     knightPosZ = armorMan.position.z;
                     object_positions = {
                         position_x: [
                             knightPosX,
-                            x - 0.2,
-                            x + 0.2
+                            x - 0.1,
+                            x + 0.1
                         ],
                         position_y: [
                             knightPosY,
-                            y - 1.00,
-                            y + 1.00
+                            y - 0.5,
+                            y + 0.5
                         ],
                         position_z: [
                             knightPosZ,
-                            z - 0.2,
-                            z + 0.2
+                            z - 0.5,
+                            z + 0.5
                         ]
                     }
                     if(between(object_positions) && hitWait.current === false){
@@ -411,16 +434,20 @@ const Game = () => {
             let treeRotationZ;
             let treePositionY;
             let moveTrees = ()=>{
-                calculateTreeAngle = -(trees.current[angleSphereForTrees.current[0]].scene.rotation.x / (180 / Math.PI));// Z POSITIONING STAYS THE SAME
+                calculateTreeAngle = -(trees.current[angleSphereForTrees.current[0]].rotation.x / (180 / Math.PI));// Z POSITIONING STAYS THE SAME
                 newX = (Math.random() * (1 - (-1)) + (-1));
-                trees.current[angleSphereForTrees.current[0]].scene.position.x = newX;
+                trees.current[angleSphereForTrees.current[0]].position.x = newX;
+                console.log(trees.current[angleSphereForTrees.current[0]])
                 zRotationNewRadius = Math.sqrt(49 - (newX * newX));
                 treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
-                trees.current[angleSphereForTrees.current[0]].scene.rotation.z = -treeRotationZ;
+                trees.current[angleSphereForTrees.current[0]].rotation.z = -treeRotationZ;
                 treePositionY = Math.cos(calculateTreeAngle * (180 / Math.PI)) * zRotationNewRadius;
-                trees.current[angleSphereForTrees.current[0]].scene.position.y = treePositionY;  
+                trees.current[angleSphereForTrees.current[0]].position.y = treePositionY;  
                 angleSphereForTrees.current[0] += 1;//TREE NUMBER
                 angleSphereForTrees.current[1] += 0.01626666666;//TREE NUMBER 
+                trees.current[angleSphereForTrees.current[0]].updateMatrix();
+                trees_instanced_mesh.setMatrixAt( angleSphereForTrees.current[0], trees.current[angleSphereForTrees.current[0]].matrix );
+                trees_instanced_mesh.instanceMatrix.needsUpdate = true;
                 if(trees.current[angleSphereForTrees.current[0] + 1] === undefined){
                     angleSphereForTrees.current[0] = 0;
                 }                               
@@ -626,7 +653,7 @@ const Game = () => {
             setInterval(() => jump(), 20);
 
             //TRYING A SPHERE
-            /*let floorTexture = new THREE
+            let floorTexture = new THREE
                 .TextureLoader(manager)
                 .load('homescreenGrass.jpg', () => {
                     floorTexture.wrapS = THREE.RepeatWrapping;
@@ -634,7 +661,7 @@ const Game = () => {
                     floorTexture
                         .repeat
                         .set(2, 2);
-                });*/
+                });
             /*let floorBump = new THREE
                 .TextureLoader(manager)
                 .load('sunbump.png', () => {
@@ -644,17 +671,17 @@ const Game = () => {
                         .repeat
                         .set(2, 2);
                 });*/
-            /*let geometrySphere = new THREE.SphereBufferGeometry(7, 50, 50);
-            let materialSphere = new THREE.MeshPhongMaterial({map: floorTexture});
-            let sphere = new THREE.Mesh(geometrySphere, materialSphere);
+            const geometrySphere = new THREE.SphereBufferGeometry(7, 50, 50);
+            const materialSphere = new THREE.MeshPhongMaterial({map: floorTexture});
+            const sphere = new THREE.Mesh(geometrySphere, materialSphere);
             sphere.position.set(0, 0, 0);
             sphere.rotation.z = 1;
-            scene.add(sphere);*/
+            scene.add(sphere);
             
-            const geometry = new THREE.BufferGeometry();
+            //const geometry = new THREE.BufferGeometry();
             // create a simple square shape. We duplicate the top left and bottom right
             // vertices because each vertex needs to appear once per triangle.
-            const array_to_transform = [
+            /*const array_to_transform = [
                 0.0,0.0,0.0,//Front
                 0.1,0.0,0.0,
                 0.1,0.1,0.0,
@@ -662,7 +689,8 @@ const Game = () => {
                 0.0,0.1,0.0,
                 0.0,0.0,0.0
             ]
-            const increase_vertex_count = (arr)=>{
+            const increase_vertex_count = (arr)=>{//I reduce the size of the vertex points and increase them along the x axis progressively
+                // until i reach x = 0.8 and y = 0.8
                 let new_arr = [
                     0.0,0.0,0.0,//Front
                     0.1,0.0,0.0,
@@ -673,25 +701,26 @@ const Game = () => {
                 ];
                 let count = 0;
                 let increase_y = 0;
-                for(let j = 0; j < 64; j++){
-                    for(let i = 0; i < arr.length; i+=3){
-                        if(count > 8){
-                            new_arr.push(
-                                arr[i] + 0.1 * count, arr[i+1] + increase_y, arr[i+2] 
-                            )
-                            count = 0;
-                            increase_y+=0.1;
-                        }
-                        else{
-                            new_arr.push(
-                                arr[i] + 0.1 * count, arr[i+1] + increase_y, arr[i+2] 
-                            )
-                        }
+                for(let j = 0; j < 63; j++){
+                    if(count >= 0.7){
+                        increase_y+=0.1;
+                        count = -0.1;
                     }
+                    for(let i = 0; i < arr.length; i+=3){
+                            console.log(count);
+                            new_arr.push(
+                                arr[i] + 0.1 + count, arr[i+1] + increase_y, arr[i+2] 
+                            )
+                    }
+                    count += 0.1;
                 }
                 return new_arr;
             }
-
+            //To rotate the face by 90 degrees, we need to multiply:
+            // [
+            //      x*cos(angle) - y*sin(angle) ==> x
+            //      x*sin(angle) + y*cos(angle) ==> y
+            // ] when I want to rotate the front face to bottom I use the z value instead of x
             const transform_matrix = (arr, size, angle)=>{
                 let new_arr = [];
                 angle = angle * Math.PI/180;
@@ -712,7 +741,7 @@ const Game = () => {
                         }
                     }
                 }
-                for(let j = 0; j < 2; j++){
+                for(let j = 0; j < 2; j++){//arr[i] = z; arr[i-2] = x
                     for(let i = 2; i < arr.length; i+=3){
                         if(j === 0){
                             new_arr.push(
@@ -791,15 +820,14 @@ const Game = () => {
                 0.0,0.0,1.0,
                 0.0,0.0,0.0
 
-            ]);*/
+            ]);*/ 
 
-
-            const vertices= new Float32Array(transform_matrix(increase_vertex_count(array_to_transform), 0.1, 90));
+            //const vertices= new Float32Array(transform_matrix(increase_vertex_count(array_to_transform), 0.8, 90));
             
             // itemSize = 3 because there are 3 values (components) per vertex
-            geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-            //geometry.setAttribute( 'normals', new THREE.BufferAttribute( new Uint32Array( normals ), 1 ) );
-            const material = new THREE.MeshBasicMaterial( { color: 'blue', side: THREE.DoubleSide, vertexColors: false } );
+            /*geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+            //geometry.setAttribute( 'normals', new THREE.BufferAttribute( new Uint32Array( vertexNormals ), 1 ) );
+            const material = new THREE.MeshStandardMaterial( { color: 'blue',  side: THREE.DoubleSide} );
             const mesh = new THREE.Mesh( geometry, material );
             console.log(geometry.attributes.position);
             /*for (let i = 0; i < geometry.attributes.position.array.length; i += 3) {
@@ -807,8 +835,8 @@ const Game = () => {
                 geometry.attributes.position.array[i] = v.x
                 geometry.attributes.position.array[i + 1] = v.y
                 geometry.attributes.position.array[i + 2] = v.z
-            }*/
-            scene.add(mesh);
+            }
+            scene.add(mesh);*/
   
 
             const animate = () => {
@@ -881,7 +909,7 @@ const Game = () => {
                 </div>
             </div>
             <div style={style.canvas} ref={canvas}></div>
-            <div style={{position: "absolute", display: "none", textAlign: "center", height: "125px", width: "200px",
+            <div style={{position: "absolute", display: "grid", textAlign: "center", height: "125px", width: "200px",
             left: "50%", top: "50%", marginLeft: "-100px", marginTop: "-67.5px", background: "brown", color: "white", zIndex: "2",
             borderRadius: "7px",
             boxShadow: "0px 10px 21px 0px rgba(50, 50, 50, 0.75)", alignContent: "center", transition: "all 0.5s ease-out", fontWeight: "bold",

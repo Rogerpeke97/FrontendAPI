@@ -305,11 +305,9 @@ const HomeScreen = () => {
                 dummy_tree.rotation.set(treeRotationX, 0, -treeRotationZ);
                 dummy_tree.updateMatrix();
                 trees_instanced_mesh.setMatrixAt( j, dummy_tree.matrix );
-                console.log(dummy_tree);
                 //angleSphereForTrees += 0.00813333333; //keep it at 0 because trees are on a fixed x value
             }
             trees_instanced_mesh.instanceMatrix.needsUpdate = true;
-            console.log(trees_instanced_mesh);
             scene.add(trees_instanced_mesh);
             /*tree.scene.position.set(0, -2.1, -3.2);
             tree.scene.rotation.x = -0.2;

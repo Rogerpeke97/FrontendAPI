@@ -1,4 +1,4 @@
-import {useRef, useEffect, useState, Children} from 'react'
+import {useRef, useEffect, useState} from 'react'
 import * as THREE from "three";
 //import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -237,11 +237,9 @@ const Game = () => {
                         dummy_tree.updateMatrix();
                         trees_instanced_mesh.setMatrixAt( j, dummy_tree.matrix );
                         trees.current.push(dummy_tree);
-                        console.log(dummy_tree);
                         angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
                 }
                 trees_instanced_mesh.instanceMatrix.needsUpdate = true;
-                console.log(trees_instanced_mesh);
                 angleSphereForTrees.current = 0;
             })
             const dummy = new THREE.Object3D();
@@ -442,16 +440,12 @@ const Game = () => {
                         calculateTreeAngle = -(trees.current[angleSphereForTrees.current].rotation.x / (180 / Math.PI));// Z POSITIONING STAYS THE SAME
                         newX = (Math.random() * (1 - (-1)) + (-1));
                         trees.current[angleSphereForTrees.current].position.x = newX;
-                        console.log(trees.current[angleSphereForTrees.current])
                         zRotationNewRadius = Math.sqrt(49 - (newX * newX));
                         treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
                         trees.current[angleSphereForTrees.current].rotation.z = -treeRotationZ;
                         treePositionY = Math.cos(calculateTreeAngle * (180 / Math.PI)) * zRotationNewRadius;
                         trees.current[angleSphereForTrees.current].position.y = treePositionY;  
                         //angleSphereForTrees.current[1] += 0.01626666666;//TREE NUMBER 
-                        console.log(trees.current[angleSphereForTrees.current]);
-                        console.log(angleSphereForTrees.current)
-                        console.log(trees.current.length)
                         trees.current[angleSphereForTrees.current].updateMatrix();
                         trees_instanced_mesh.setMatrixAt( angleSphereForTrees.current, trees.current[angleSphereForTrees.current].matrix );
                     }  

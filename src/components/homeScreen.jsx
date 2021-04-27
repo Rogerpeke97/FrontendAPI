@@ -658,6 +658,7 @@ const HomeScreen = () => {
                 <div style={style.playButton}>
                         <Link
                             to="/game"
+                            onClick={()=>window.location.assign("/game")}
                             onMouseEnter={(e)=>{
                                 e.currentTarget.style.boxShadow = "inset 0px -80px 0px #2F3B47"
                             }}

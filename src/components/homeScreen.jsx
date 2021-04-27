@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons'
 import { faWindowClose, faQuestionCircle, faMapMarked } from '@fortawesome/free-solid-svg-icons'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {BufferGeometryUtils} from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 
 
@@ -127,10 +128,10 @@ const HomeScreen = () => {
 
         camera.current = new THREE.PerspectiveCamera(40, width / height, 1, 1500);
         const renderer = new THREE.WebGLRenderer({ antialias: true } );
-        let controls = new OrbitControls(camera.current, renderer.domElement);
+        /*let controls = new OrbitControls(camera.current, renderer.domElement);
         controls
             .target
-            .set(0, 0, 0);
+            .set(0, 0, 0);*/
         camera
             .current.position
             .set(9, -0.5, -7);
@@ -146,11 +147,8 @@ const HomeScreen = () => {
         const textureFlare = new THREE.TextureLoader(manager);
         const textureFlare0 = textureFlare.load( 'lensflare0.png' );
         const textureFlare3 = textureFlare.load( 'lensflare3.png' );
-        addLight( 0.55, 1.5, 0.5, 5000, 0, 1000 );
-        addLight( 0.08, 1.4, 0.5, -1000, 100, 1005 );
-        addLight( 0.995, 1.2, 0.9, 5000, 5000, 1000 );
 
-        function addLight( h, s, l, x, y, z ) {
+        const addLight = ( h, s, l, x, y, z ) => {
 
             const light = new THREE.PointLight( 0xffffff, 1.5, 7500 );
             light.color.setHSL( h, s, l );
@@ -164,7 +162,12 @@ const HomeScreen = () => {
             lensflare.addElement( new LensflareElement( textureFlare3, 120, 0.9 ) );
             lensflare.addElement( new LensflareElement( textureFlare3, 70, 1 ) );
             light.add( lensflare );
+            
         }
+
+        addLight( 0.55, 1.5, 0.5, 5000, 0, 1000 );
+        addLight( 0.08, 1.4, 0.5, -1000, 100, 1005 );
+        addLight( 0.995, 1.2, 0.9, 5000, 5000, 1000 );
 
         let clock = new THREE.Clock();
         window.addEventListener('resize', () => {
@@ -261,12 +264,58 @@ const HomeScreen = () => {
         scene.background = textu;
         //TREE
         const treeLoader = new GLTFLoader(manager);
+        let trees_instanced_mesh;
+        let treeRotationX, treePositionY;
+        let newX = -5;
+        let angleSphereForTrees = 0;
+        let geometry_merged = new THREE.BufferGeometry();
+        let geometry_array = [];
+        let material_tree;
         treeLoader.load('new_tree.glb', (tree) => {
-            tree.scene.position.set(0, -2.1, -3.2);
+            tree.scene.traverse((child)=>{
+                if (child.isMesh) {
+                    geometry_array.push(child.geometry.clone().applyMatrix4(child.matrixWorld));
+                    material_tree =  child.material;
+                }
+            });
+            geometry_merged = BufferGeometryUtils.mergeBufferGeometries(geometry_array);
+            //geometry_merged.merge(child.geometry, child.matrix);
+            //const mesh_material = new THREE.MeshStandardMaterial({color: 0xFFFFFF});
+            trees_instanced_mesh = new THREE.InstancedMesh(geometry_merged, material_tree, 2);
+            trees_instanced_mesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
+               //trees_instanced_mesh.instanceMatrix.needsUpdate = true;
+                //dummy_tree.add(tree_children[i]);
+            for (let j = 0; j < 2; j++) {
+                let dummy_tree = new THREE.Object3D();
+                dummy_tree.scale.set(0.3,0.3,0.3);
+                newX+=3; //RANDOM NUMBER BETWEEN -7 AND 7
+                zRotationNewRadius = Math.sqrt(49 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                z = Math.sin(angleSphereForTrees * (180 / Math.PI)) * zRotationNewRadius;
+                // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE
+                // RIGHT ROTATION AND Y POSITION AROUND THE SPHERE TREE ROTATION SIN ANGLE =
+                // OPOSSITE OVER HYPOTHENUSE
+                treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
+
+                treeRotationX = -angleSphereForTrees * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)
+
+                //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
+                treePositionY = Math.cos(angleSphereForTrees * (180 / Math.PI)) * zRotationNewRadius;
+
+                dummy_tree.position.set(newX, treePositionY -9.3, -z-3.2);
+                dummy_tree.rotation.set(treeRotationX, 0, -treeRotationZ);
+                dummy_tree.updateMatrix();
+                trees_instanced_mesh.setMatrixAt( j, dummy_tree.matrix );
+                console.log(dummy_tree);
+                //angleSphereForTrees += 0.00813333333; //keep it at 0 because trees are on a fixed x value
+            }
+            trees_instanced_mesh.instanceMatrix.needsUpdate = true;
+            console.log(trees_instanced_mesh);
+            scene.add(trees_instanced_mesh);
+            /*tree.scene.position.set(0, -2.1, -3.2);
             tree.scene.rotation.x = -0.2;
             tree.scene.rotation.y = -0.4;
 
-            scene.add(tree.scene);
+            scene.add(tree.scene);*/
         })
 
         //GRASS
@@ -296,7 +345,7 @@ const HomeScreen = () => {
                 dummy.rotation.x = grassRotationX;
     
                 grassPositionY = Math.cos(angleSphereForgrass.current * (180 / Math.PI)) * zRotationNewRadius;
-                dummy.position.y = grassPositionY - 9;
+                dummy.position.y = grassPositionY - 9.3;
                 angleSphereForgrass.current+=0.001;
                 grassRotationAngle.current-=0.001;
                 dummy.updateMatrix();

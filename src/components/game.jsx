@@ -196,9 +196,9 @@ const Game = () => {
             let treeRotationX;
             const treeLoader = new GLTFLoader(manager);
             let trees_instanced_mesh;
-                let geometry_merged = new THREE.BufferGeometry();
-                let geometry_array = [];
-                let material_tree;
+            let geometry_merged = new THREE.BufferGeometry();
+            let geometry_array = [];
+            let material_tree, z_tree;
                 treeLoader.load('new_tree.glb', (tree) => {
                     tree.scene.traverse((child)=>{
                         if (child.isMesh) {
@@ -211,6 +211,7 @@ const Game = () => {
                     //geometry_merged.merge(child.geometry, child.matrix);
                     //const mesh_material = new THREE.MeshStandardMaterial({color: 0xFFFFFF});
                     trees_instanced_mesh = new THREE.InstancedMesh(geometry_merged, material_tree, 15);
+                    trees_instanced_mesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
                        //trees_instanced_mesh.instanceMatrix.needsUpdate = true;
                         //dummy_tree.add(tree_children[i]);
                     scene.add(trees_instanced_mesh);
@@ -220,7 +221,7 @@ const Game = () => {
                         dummy_tree.scale.set(0.1,0.1,0.1)
                         newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
                         zRotationNewRadius = Math.sqrt(49 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
-                        z = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
+                        z_tree = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
                         // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE
                         // RIGHT ROTATION AND Y POSITION AROUND THE SPHERE TREE ROTATION SIN ANGLE =
                         // OPOSSITE OVER HYPOTHENUSE
@@ -231,16 +232,17 @@ const Game = () => {
                         //FIND Y OPOSSITE = SQUARE ROOT OF RADIUS SQUARED - ADYACER = Z SQUARED
                         treePositionY = Math.cos(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
 
-                        dummy_tree.position.set(newX, treePositionY, -z);
+                        dummy_tree.position.set(newX, treePositionY, -z_tree);
                         dummy_tree.rotation.set(treeRotationX, 5, -treeRotationZ);
                         dummy_tree.updateMatrix();
                         trees_instanced_mesh.setMatrixAt( j, dummy_tree.matrix );
-                        trees.current.push(dummy_tree)
-
+                        trees.current.push(dummy_tree);
+                        console.log(dummy_tree);
                         angleSphereForTrees.current = angleSphereForTrees.current + 0.00813333333;
                 }
                 trees_instanced_mesh.instanceMatrix.needsUpdate = true;
                 console.log(trees_instanced_mesh);
+                angleSphereForTrees.current = 0;
             })
             const dummy = new THREE.Object3D();
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
@@ -365,6 +367,7 @@ const Game = () => {
             let x, y, z, knightPosX, knightPosY, knightPosZ, object_positions;
             let characterHitByTree = (armorMan)=>{
                 trees.current.forEach((tree)=>{
+                    tree.updateMatrix();
                     x = tree.position.x;
                     knightPosX = armorMan.position.x;
                     y = tree.position.y
@@ -384,8 +387,8 @@ const Game = () => {
                         ],
                         position_z: [
                             knightPosZ,
-                            z - 0.5,
-                            z + 0.5
+                            z - 0.2,
+                            z + 0.2
                         ]
                     }
                     if(between(object_positions) && hitWait.current === false){
@@ -434,25 +437,36 @@ const Game = () => {
             let treeRotationZ;
             let treePositionY;
             let moveTrees = ()=>{
-                calculateTreeAngle = -(trees.current[angleSphereForTrees.current[0]].rotation.x / (180 / Math.PI));// Z POSITIONING STAYS THE SAME
-                newX = (Math.random() * (1 - (-1)) + (-1));
-                trees.current[angleSphereForTrees.current[0]].position.x = newX;
-                console.log(trees.current[angleSphereForTrees.current[0]])
-                zRotationNewRadius = Math.sqrt(49 - (newX * newX));
-                treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
-                trees.current[angleSphereForTrees.current[0]].rotation.z = -treeRotationZ;
-                treePositionY = Math.cos(calculateTreeAngle * (180 / Math.PI)) * zRotationNewRadius;
-                trees.current[angleSphereForTrees.current[0]].position.y = treePositionY;  
-                angleSphereForTrees.current[0] += 1;//TREE NUMBER
-                angleSphereForTrees.current[1] += 0.01626666666;//TREE NUMBER 
-                trees.current[angleSphereForTrees.current[0]].updateMatrix();
-                trees_instanced_mesh.setMatrixAt( angleSphereForTrees.current[0], trees.current[angleSphereForTrees.current[0]].matrix );
+                for(let i = 0; i < 15; i++){
+                    if(i === angleSphereForTrees.current){
+                        calculateTreeAngle = -(trees.current[angleSphereForTrees.current].rotation.x / (180 / Math.PI));// Z POSITIONING STAYS THE SAME
+                        newX = (Math.random() * (1 - (-1)) + (-1));
+                        trees.current[angleSphereForTrees.current].position.x = newX;
+                        console.log(trees.current[angleSphereForTrees.current])
+                        zRotationNewRadius = Math.sqrt(49 - (newX * newX));
+                        treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
+                        trees.current[angleSphereForTrees.current].rotation.z = -treeRotationZ;
+                        treePositionY = Math.cos(calculateTreeAngle * (180 / Math.PI)) * zRotationNewRadius;
+                        trees.current[angleSphereForTrees.current].position.y = treePositionY;  
+                        //angleSphereForTrees.current[1] += 0.01626666666;//TREE NUMBER 
+                        console.log(trees.current[angleSphereForTrees.current]);
+                        console.log(angleSphereForTrees.current)
+                        console.log(trees.current.length)
+                        trees.current[angleSphereForTrees.current].updateMatrix();
+                        trees_instanced_mesh.setMatrixAt( angleSphereForTrees.current, trees.current[angleSphereForTrees.current].matrix );
+                    }  
+                    else{
+                        trees.current[i].updateMatrix();
+                        trees_instanced_mesh.setMatrixAt( i, trees.current[i].matrix );
+                    }         
+                }
                 trees_instanced_mesh.instanceMatrix.needsUpdate = true;
-                if(trees.current[angleSphereForTrees.current[0] + 1] === undefined){
-                    angleSphereForTrees.current[0] = 0;
-                }                               
+                angleSphereForTrees.current += 1;//TREE NUMBER
+                if(trees.current[angleSphereForTrees.current + 1] === undefined){
+                    angleSphereForTrees.current = 0;
+                }     
             }
-            setInterval(()=>animationsAdded.current === true ? moveTrees() : "", 1500);
+            setInterval(()=>animationsAdded.current === true ? moveTrees() : "", 10000);
 
             let checkMovements = (armorMan)=>{   
                 //CHARACTER MOVEMENTS KEY EVENTS
@@ -524,7 +538,7 @@ const Game = () => {
                         .current
                         .rotation
                         .set(-0.0057 - 0.1, 0, 0);
-                    angleSphereForTrees.current = [0, 0];
+                    angleSphereForTrees.current = 0
                     axios.post('https://xentaserver.herokuapp.com/uploadscore', { // UPLOADS SCORE
                         authorization: localStorage.getItem('user'),
                         score: `${scorePoints.current}`
@@ -867,7 +881,6 @@ const Game = () => {
             percentage.current.innerText = "100%";
             progress_bar.current.style.width = percentage.current.innerText;
             fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
-            angleSphereForTrees.current = [0, 0];
             fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
         }
     }

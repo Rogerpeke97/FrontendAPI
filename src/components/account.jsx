@@ -24,7 +24,7 @@ let style = {
         maxWidth: "700px",
         backgroundColor: "lightgray",
         display: "grid",
-        zIndex: "2"
+        zIndex: "-2" // ATTENTION: SET TO 2 AFTER FINISHING BACKGROUND_ACCOUNT SCENE
     },
     canvas:{
         minHeight: "200px",

@@ -17,16 +17,7 @@ const BackgroundAccount = ()=>{
     const canvas = useRef(null);
     useEffect(()=>{ 
         //Background
-        let obj;
         const scene = new THREE.Scene();
-        const loader = new OBJLoader();
-        loader.load( 'earth.obj', ( object )=>{
-            object.position.x = 0;
-            object.position.y = -1.5;
-            object.position.z = -4;
-            obj = object;
-            scene.current.add( obj );
-        } );
         let height = canvas.current.clientHeight
         let width = canvas.current.clientWidth
         //const helper = new THREE.PlaneHelper( plane, 10, 0xffff00 ); DEBUGGING TO SEE THE PLANE
@@ -42,45 +33,45 @@ const BackgroundAccount = ()=>{
         const light = new THREE.DirectionalLight(color_scene, intensity);
         light
             .position
-            .set(0, 0, 3);
+            .set(-1, 2, 4);
         scene.add(light);
         scene.background = new THREE.Color(0xFFFF00);  
 
-        //PARTICLES
-        let particleCount = 2600; // There is one more due to the float being slightly above 0 
-        let particles = new THREE.BufferGeometry();
+        //polygons
+        const geometry = new THREE.BufferGeometry();
 
-        let pMaterial = new THREE.PointsMaterial({
-            color: 'white', size: 0.1, alphaTest: 0.1, // removes black squares
-            blending: THREE.CustomBlending,
-            transparent: false
-        });
+        const positions = new Float32Array([
+                //Front
+                0.0,0.0,0.0,//0
+                0.1,0.0,0.0,//1
+                0.1,0.1,0.0,//2
+        ]);
 
-        let positions = [];
+        const normals = new Float32Array([
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1
+        ]);
 
-        for (let i = 3; i > -3; i-= 0.2) {
-            let count = -5;
-            for(let j = 0; j < 10; j+=0.2){
-                let posX = count;
-                let posY = i;
-                let posZ = 0;
-                positions.push(posX, posY, posZ);
-                count+=0.2;   
-            }
-        }
+        const uv = new Float32Array([
+            0, 0,
+            1, 0,
+            0, 1
+        ])
+
+        const indices = [
+            0, 1, 2
+        ];
 
 
-        particles.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        // create the particle system
-        let particleSys = new THREE.Points(particles, pMaterial);
-        particleSys.receiveShadow = true;
-        particleSys.castShadow = true;
-        particleSys.name = 'particleSys';
+        geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+        geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+        geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+        geometry.setIndex(indices);
+        const material = new THREE.MeshPhongMaterial( { color: 'blue'} );
+        const polygon = new THREE.Mesh( geometry, material );
 
-        console.log(particleSys);
-
-        scene.add(particleSys);
-
+        scene.add(polygon);
 
         window.addEventListener('resize', ()=>{
             if(canvas.current !== null){

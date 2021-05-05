@@ -1,15 +1,15 @@
 <h1 style="text-decoration: underline;">Frontend for Xenta's game website <h1>
 
 <div style= "justify-content: center; font-size: 1rem">
-            <a href="https://xenta.netlify.app/" rel="noopener noreferrer" target="_blank"
-            style="justify-content= center; align-content: center; cursor: pointer;">
-                Website
-            </a>
-            <div style="margin-left: 5px; margin-right: 5px"> | </div>
-            <a href="https://github.com/Rogerpeke97/APISpring" rel="noopener noreferrer" target="_blank"
-            style="justify-content= center; align-content: center; cursor: pointer;">
-                Backend
-            </a>
+<a href="https://xenta.netlify.app/" rel="noopener noreferrer" target="_blank"
+style="justify-content= center; align-content: center; cursor: pointer;">
+    Website
+</a>
+<div style="margin-left: 5px; margin-right: 5px"> | </div>
+<a href="https://github.com/Rogerpeke97/APISpring" rel="noopener noreferrer" target="_blank"
+style="justify-content= center; align-content: center; cursor: pointer;">
+    Backend
+</a>
 </div>
 
 ### `Technologies used`:

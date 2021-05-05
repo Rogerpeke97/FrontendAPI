@@ -1,16 +1,13 @@
 <h1 style="text-decoration: underline;">Frontend for Xenta's game website <h1>
 
-<div style= "justify-content: center; font-size: 1rem">
 <a href="https://xenta.netlify.app/" rel="noopener noreferrer" target="_blank"
 style="justify-content= center; align-content: center; cursor: pointer;">
     Website
 </a>
-<div style="margin-left: 5px; margin-right: 5px"> | </div>
 <a href="https://github.com/Rogerpeke97/APISpring" rel="noopener noreferrer" target="_blank"
 style="justify-content= center; align-content: center; cursor: pointer;">
     Backend
 </a>
-</div>
 
 ### `Technologies used`:
 
@@ -39,9 +36,13 @@ style="justify-content= center; align-content: center; cursor: pointer;">
 After cloning the repository type `npm i` in the console to install the dependencies, after that use `npm run start` to run the website in your localhost.
 
 ### `Game screenshots`
-<img src="public/demo.gif">
+<img src="public/xenta_home.png">
 
 </br>
 
-<img src="public/xenta_home.png">
+<img src="public/gameGif.gif">
+
+</br>
+
+<img src="public/demo.gif">
 

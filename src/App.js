@@ -4,7 +4,6 @@ import Navbar from './components/navbar';
 import Login from './components/login';
 import Game from './components/game';
 import Leaderboard from './components/leaderboard';
-import axios from 'axios'
 
 import {
   BrowserRouter as Router,

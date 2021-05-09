@@ -219,12 +219,14 @@ const Game = () => {
                     for (let j = 0; j < 15; j++) {
                         let dummy_tree = new THREE.Object3D();
                         dummy_tree.scale.set(0.1,0.1,0.1)
-                        newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7
-                        zRotationNewRadius = Math.sqrt(49 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7 THIS CORRESPONDS TO THE x VALUE FROM THE CENTER OF THE SPHERE AND THE VALUE y IS THE RADIUS
+                        zRotationNewRadius = Math.sqrt(7 * 7 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        //The hypothenuse of zRotationNewRadius is the radius, newX is the adyacent and the new radius the opposite. Using trigonometry we get the new radius looking at the 
+                        //sphere from the side
                         z_tree = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
                         // I HAVE TO USE THE SAME FORMULA AS THE KNIGHT TO POSITION THE TREE WITH THE
                         // RIGHT ROTATION AND Y POSITION AROUND THE SPHERE TREE ROTATION SIN ANGLE =
-                        // OPOSSITE OVER HYPOTHENUSE
+                        // OPOSSITE OVER HYPOTHENUSE AND SIN OF angleSphereForTrees(radians) TO angle
                         treeRotationZ = Math.asin(newX / 7); //SPHERE RADIUS = 7
 
                         treeRotationX = -angleSphereForTrees.current * (180 / Math.PI); //The tree rotation ON X AXIS (FORWARDS)

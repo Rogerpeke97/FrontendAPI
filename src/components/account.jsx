@@ -95,6 +95,7 @@ const Account = () => {
     const [colorSet, setColorSet] = useState("");
     const [userInfo, setUserInfo] = useState({user: "", joined_date: "", max_score: "", game_tag: ""});
     const dummy_polygons = useRef([]);
+    const polygons_states = useRef([]);
     const checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
         axios.post('http://localhost:8080/accountdetails', {
             authorization: localStorage.getItem('user')
@@ -164,7 +165,7 @@ const Account = () => {
 
     return (
         <div style={style.backgroundAccount}>
-            <BackgroundAccount dummy_polygons = {dummy_polygons} />
+            <BackgroundAccount dummy_polygons = {dummy_polygons} polygons_states = {polygons_states} />
             <div style={style.insideAccount}>
                 <div style={{display: "flex", overflow: "hidden", height: "500px"}}>
                     <div style={{flex: "0.5", height: "100%"}}>

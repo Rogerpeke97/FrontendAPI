@@ -15,7 +15,7 @@ let style = {
     }
 }
 
-const BackgroundAccount = ({dummy_polygons})=>{
+const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
     const canvas = useRef(null);
     useEffect(()=>{ 
         //Background
@@ -69,29 +69,46 @@ const BackgroundAccount = ({dummy_polygons})=>{
         // }
 
         //ROTATE POLYGONS
-        const rotate_polygon = (dummy /*size*/, dummy_number, angle, speed)=>{
-            dummy = dummy[dummy_number];
-            angle = angle * Math.PI/180;
-            console.log(dummy.rotation.y);
-            if(dummy.rotation.y >= angle){
-                for(let i = angle; i > 0; i-=speed){
-                    //FRONT TO LEFT 
-                    dummy.rotation.y = i * Math.PI/180;  
-                    dummy.updateMatrix();
-                    polygon_instanced_mesh.setMatrixAt( dummy_number, dummy.matrix );
-                }          
+        let instanced_mesh_to_modify;
+        const rotate_polygon = (dummy /*size*/, dummy_number, angle)=>{
+            // let instanced_mesh_to_modify;
+            let rotation;
+            if(dummy_number > 1350){
+                instanced_mesh_to_modify = polygon_2_instanced_mesh;
             }
             else{
-                for(let i = 0; i < angle; i+=speed){
-                    //FRONT TO LEFT 
-                    dummy.rotation.y = i * Math.PI/180;  
-                    dummy.updateMatrix();
-                    polygon_instanced_mesh.setMatrixAt( dummy_number, dummy.matrix );    
-                }
+                instanced_mesh_to_modify = polygon_instanced_mesh;
             }
+            dummy = dummy[dummy_number];
+            angle = angle * Math.PI/180;
+            if(dummy.rotation.y >= angle){
+                polygons_states.current[dummy_number] = 'rotate_back';
+            }
+            if(dummy.rotation.y <= 0){
+                polygons_states.current[dummy_number] = 'rotate';
+            }
+            if(polygons_states.current[dummy_number] === 'rotate_back'){
+                rotation = -0.01;
+            }
+            if(polygons_states.current[dummy_number] === 'rotate'){
+                rotation = 0.01;
+            }
+            //FRONT TO LEFT 
+            dummy.rotation.y = dummy.rotation.y + rotation;  
+            dummy.updateMatrix();
+            instanced_mesh_to_modify.setMatrixAt( dummy_number, dummy.matrix );
+
         }
-
-
+ 
+        renderer.setAnimationLoop(() => {
+            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
+            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
+            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
+            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
+            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
+            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
+            instanced_mesh_to_modify.instanceMatrix.needsUpdate = true;
+        })
         //polygons
         const geometry = new THREE.BufferGeometry();
 
@@ -143,6 +160,7 @@ const BackgroundAccount = ({dummy_polygons})=>{
                 dummy.updateMatrix();
                 polygon_instanced_mesh.setMatrixAt( count, dummy.matrix );
                 dummy_polygons.current.push(dummy);
+                polygons_states.current.push('rotate');
                 count++;
             }
         }
@@ -182,13 +200,12 @@ const BackgroundAccount = ({dummy_polygons})=>{
                 dummy_2.updateMatrix();
                 polygon_2_instanced_mesh.setMatrixAt( count, dummy_2.matrix );
                 dummy_polygons.current.push(dummy_2);
+                polygons_states.current.push('rotate');
                 count++;
             }
         }
         polygon_2_instanced_mesh.instanceMatrix.needsUpdate = true;
 
-
-        setInterval(()=>rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45, 0.9), 50);
 
 
 

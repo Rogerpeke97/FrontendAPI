@@ -69,11 +69,8 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         // }
 
         //ROTATE POLYGONS
-        let instanced_mesh_to_modify;
-        let dummy_number_minus;
-        let dummy;
-        let angle = 45 * Math.PI/180;
-        let rotation;
+        let angle = 30 * Math.PI/180;
+        let dummy, rotation;
         // const rotate_polygon = (dummy /*size*/, dummy_number, angle)=>{
         //     // let instanced_mesh_to_modify;
         //     let rotation;
@@ -104,52 +101,51 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         //     instanced_mesh_to_modify.setMatrixAt( dummy_number - dummy_number_minus, dummy.matrix ); // EL PROBLEMA ES EL DUMMY NUMBER, SON 1350 POR instanced mesh, POR LO TanTO USAR 2700 NO MODIFICA NADA
         // }
  
-        renderer.setAnimationLoop(() => {
+        const render = () => {
             // rotate_polygon(dummy_polygons.current, 2, 45);
             for(let i = 0; i < dummy_polygons.current.length / 2; i++){
                 dummy = dummy_polygons.current[i];
-                if(dummy.rotation.x >= angle){
-                    polygons_states.current[i] = 'rotate_back';
-                    rotation = -0.01;
-                }
                 if(dummy.rotation.x <= 0){
-                    polygons_states.current[i] = 'rotate';
-                    rotation = 0.01;
+                    polygons_states.current[i] = 'rotate_back';
                 }
-                // if(polygons_states.current[i] === 'rotate_back'){
-                //     rotation = 0.01;
-                // }
-                // if(polygons_states.current[i] === 'rotate'){
-                //     rotation = -0.01;
-                // }
+                if(dummy.rotation.x >= angle){
+                    polygons_states.current[i] = 'rotate';
+                }
+                if(polygons_states.current[i] === 'rotate_back'){
+                    rotation = 0.005;
+                }
+                if(polygons_states.current[i] === 'rotate'){
+                    rotation = -0.005;
+                }
                 //FRONT TO LEFT 
                 // dummy.rotation.y = dummy.rotation.y + rotation;  
                 dummy.rotation.x = dummy.rotation.x + rotation;  
                 dummy.updateMatrix();
                 polygon_instanced_mesh.setMatrixAt( i, dummy.matrix ); // EL PROBLEMA ES EL DUMMY NUMBER, SON 1350 POR instanced mesh, POR LO TanTO USAR 2700 NO MODIFICA NADA
             }
-            polygon_instanced_mesh.instanceMatrix.needsUpdate = true;
             for(let j = dummy_polygons.current.length / 2; j < dummy_polygons.current.length; j++){
                 dummy = dummy_polygons.current[j];
                 if(dummy.rotation.y <= -angle){
                     polygons_states.current[j] = 'rotate_back';
-                    rotation = 0.01;
                 }
                 if(dummy.rotation.y >= 0){
                     polygons_states.current[j] = 'rotate';
-                    rotation = -0.01;
                 }
-                // if(polygons_states.current[i] === 'rotate_back'){
-                // }
-                // if(polygons_states.current[i] === 'rotate'){
-                // }
+                if(polygons_states.current[j] === 'rotate_back'){
+                    rotation = 0.005;
+                }
+                if(polygons_states.current[j] === 'rotate'){
+                    rotation = -0.005;
+                }
                 //FRONT TO LEFT 
                 dummy.rotation.y = dummy.rotation.y + rotation;  
                 dummy.updateMatrix();
                 polygon_2_instanced_mesh.setMatrixAt( j - dummy_polygons.current.length / 2, dummy.matrix ); // EL PROBLEMA ES EL DUMMY NUMBER, SON 1350 POR instanced mesh, POR LO TanTO USAR 2700 NO MODIFICA NADA
             }
+            polygon_instanced_mesh.instanceMatrix.needsUpdate = true;
             polygon_2_instanced_mesh.instanceMatrix.needsUpdate = true;
-        })
+            renderer.render(scene, camera)
+        };
         //polygons
         const geometry = new THREE.BufferGeometry();
 
@@ -263,8 +259,8 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         canvas.current.appendChild(renderer.domElement)
 
         const animate = ()=>{
-            renderer.render(scene, camera)
-            window.requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
+            render();
         }
         animate();
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -70,44 +70,85 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
 
         //ROTATE POLYGONS
         let instanced_mesh_to_modify;
-        const rotate_polygon = (dummy /*size*/, dummy_number, angle)=>{
-            // let instanced_mesh_to_modify;
-            let rotation;
-            if(dummy_number > 1350){
-                instanced_mesh_to_modify = polygon_2_instanced_mesh;
-            }
-            else{
-                instanced_mesh_to_modify = polygon_instanced_mesh;
-            }
-            dummy = dummy[dummy_number];
-            angle = angle * Math.PI/180;
-            if(dummy.rotation.y >= angle){
-                polygons_states.current[dummy_number] = 'rotate_back';
-            }
-            if(dummy.rotation.y <= 0){
-                polygons_states.current[dummy_number] = 'rotate';
-            }
-            if(polygons_states.current[dummy_number] === 'rotate_back'){
-                rotation = -0.01;
-            }
-            if(polygons_states.current[dummy_number] === 'rotate'){
-                rotation = 0.01;
-            }
-            //FRONT TO LEFT 
-            dummy.rotation.y = dummy.rotation.y + rotation;  
-            dummy.updateMatrix();
-            instanced_mesh_to_modify.setMatrixAt( dummy_number, dummy.matrix );
-
-        }
+        let dummy_number_minus;
+        let dummy;
+        let angle = 45 * Math.PI/180;
+        let rotation;
+        // const rotate_polygon = (dummy /*size*/, dummy_number, angle)=>{
+        //     // let instanced_mesh_to_modify;
+        //     let rotation;
+        //     if(dummy_number >= 1350){
+        //         instanced_mesh_to_modify = polygon_2_instanced_mesh;
+        //         dummy_number_minus = 1350;
+        //     }
+        //     if(dummy_number <= 1350){
+        //         instanced_mesh_to_modify = polygon_instanced_mesh;
+        //     }
+        //     dummy = dummy[dummy_number];
+        //     angle = angle * Math.PI/180;
+        //     if(dummy.rotation.y <= -angle){
+        //         polygons_states.current[dummy_number] = 'rotate_back';
+        //     }
+        //     if(dummy.rotation.y >= 0){
+        //         polygons_states.current[dummy_number] = 'rotate';
+        //     }
+        //     if(polygons_states.current[dummy_number] === 'rotate_back'){
+        //         rotation = 0.01;
+        //     }
+        //     if(polygons_states.current[dummy_number] === 'rotate'){
+        //         rotation = -0.01;
+        //     }
+        //     //FRONT TO LEFT 
+        //     dummy.rotation.y = dummy.rotation.y + rotation;  
+        //     dummy.updateMatrix();
+        //     instanced_mesh_to_modify.setMatrixAt( dummy_number - dummy_number_minus, dummy.matrix ); // EL PROBLEMA ES EL DUMMY NUMBER, SON 1350 POR instanced mesh, POR LO TanTO USAR 2700 NO MODIFICA NADA
+        // }
  
         renderer.setAnimationLoop(() => {
-            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
-            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
-            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
-            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
-            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
-            rotate_polygon(dummy_polygons.current, Math.floor((Math.random() * 2700)), 45);
-            instanced_mesh_to_modify.instanceMatrix.needsUpdate = true;
+            // rotate_polygon(dummy_polygons.current, 2, 45);
+            for(let i = 0; i < dummy_polygons.current.length / 2; i++){
+                dummy = dummy_polygons.current[i];
+                if(dummy.rotation.x >= angle){
+                    polygons_states.current[i] = 'rotate_back';
+                    rotation = -0.01;
+                }
+                if(dummy.rotation.x <= 0){
+                    polygons_states.current[i] = 'rotate';
+                    rotation = 0.01;
+                }
+                // if(polygons_states.current[i] === 'rotate_back'){
+                //     rotation = 0.01;
+                // }
+                // if(polygons_states.current[i] === 'rotate'){
+                //     rotation = -0.01;
+                // }
+                //FRONT TO LEFT 
+                // dummy.rotation.y = dummy.rotation.y + rotation;  
+                dummy.rotation.x = dummy.rotation.x + rotation;  
+                dummy.updateMatrix();
+                polygon_instanced_mesh.setMatrixAt( i, dummy.matrix ); // EL PROBLEMA ES EL DUMMY NUMBER, SON 1350 POR instanced mesh, POR LO TanTO USAR 2700 NO MODIFICA NADA
+            }
+            polygon_instanced_mesh.instanceMatrix.needsUpdate = true;
+            for(let j = dummy_polygons.current.length / 2; j < dummy_polygons.current.length; j++){
+                dummy = dummy_polygons.current[j];
+                if(dummy.rotation.y <= -angle){
+                    polygons_states.current[j] = 'rotate_back';
+                    rotation = 0.01;
+                }
+                if(dummy.rotation.y >= 0){
+                    polygons_states.current[j] = 'rotate';
+                    rotation = -0.01;
+                }
+                // if(polygons_states.current[i] === 'rotate_back'){
+                // }
+                // if(polygons_states.current[i] === 'rotate'){
+                // }
+                //FRONT TO LEFT 
+                dummy.rotation.y = dummy.rotation.y + rotation;  
+                dummy.updateMatrix();
+                polygon_2_instanced_mesh.setMatrixAt( j - dummy_polygons.current.length / 2, dummy.matrix ); // EL PROBLEMA ES EL DUMMY NUMBER, SON 1350 POR instanced mesh, POR LO TanTO USAR 2700 NO MODIFICA NADA
+            }
+            polygon_2_instanced_mesh.instanceMatrix.needsUpdate = true;
         })
         //polygons
         const geometry = new THREE.BufferGeometry();
@@ -189,7 +230,6 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         // const polygon_2 = new THREE.Mesh( geometry_polygon_2, material_2 );
 
         // scene.add(polygon_2);
-        //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
         let polygon_2_instanced_mesh = new THREE.InstancedMesh(geometry_polygon_2, material_2, 1350);
         scene.add(polygon_2_instanced_mesh);
         count = 0;
@@ -200,6 +240,7 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
                 dummy_2.updateMatrix();
                 polygon_2_instanced_mesh.setMatrixAt( count, dummy_2.matrix );
                 dummy_polygons.current.push(dummy_2);
+                // console.log(dummy_polygons.current.length);
                 polygons_states.current.push('rotate');
                 count++;
             }
@@ -207,7 +248,7 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         polygon_2_instanced_mesh.instanceMatrix.needsUpdate = true;
 
 
-
+        console.log(dummy_polygons.current);
 
         window.addEventListener('resize', ()=>{
             if(canvas.current !== null){

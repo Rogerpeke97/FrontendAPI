@@ -6,7 +6,8 @@ let style = {
     container: {
         display: "grid",
         height: "100vh",
-        width: "100%",
+        minWidth: "100vw",
+        maxWidth: "100vw",
         fontWeigth: "bold"
     },
     leaderboard: {

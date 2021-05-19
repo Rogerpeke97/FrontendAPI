@@ -16,8 +16,8 @@ let style = {
         display: 'grid',
         position: 'absolute',
         minHeight: '100vh',
-        minWidth: '100%',
-        maxWidth: '100%',
+        minWidth: '100vw',
+        maxWidth: '100vw',
         maxHeight: "100vh"
     },
     loading_bar : {
@@ -93,8 +93,6 @@ const Game = () => {
     let grass_geometry = useRef(0);
     useEffect(() => {
         if (componentLoaded === false) {
-            let scrollX = window.scrollX;
-            document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
             health.current.innerText = `x${isHeartDead.current}`;
             animationsAdded.current = null;
             let height = canvas.current.clientHeight
@@ -169,15 +167,13 @@ const Game = () => {
             })*/
             window.addEventListener('resize', () => {
                 if (canvas.current !== null) {
-                    width = document.documentElement.clientWidth;
-                    height = canvas.current.clientHeight
+                    width = canvas.current.clientWidth;
+                    height = canvas.current.clientHeight;
                     renderer.setSize(width, height);
                     camera.current.aspect = width / height;
                     camera
                         .current
                         .updateProjectionMatrix();
-                    scrollX = window.scrollX;
-                    document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
                 }
             });
 

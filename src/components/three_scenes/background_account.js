@@ -8,8 +8,8 @@ let style = {
     canvas:{
         minHeight: "1080px",
         maxHeight: "1080px", 
-        minWidth: "100%",
-        maxWidth: "100%",
+        minWidth: "100vw",
+        maxWidth: "100vw",
         position: "absolute",
         zIndex: "0"
     }
@@ -29,18 +29,20 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         const renderer = new THREE.WebGLRenderer({antialias: true});
         camera
             .position
-            .set(0, 0, 4);
+            .set(0, 0.25, 3.4);
 
-        let controls = new OrbitControls(camera, renderer.domElement);
-        controls
-            .target
-            .set(0, 0, 0);
-        const color_scene = 'white';
-        const intensity = 0.5;
+        // let controls = new OrbitControls(camera, renderer.domElement);
+        // controls
+        //     .target
+        //     .set(0, 0, 0);
+        const color_scene = 'darkgreen';
+        const intensity = 0.7;
         const light = new THREE.DirectionalLight(color_scene, intensity);
-        light.position.set(0, 10, 25);
+        light.position.set(-10, 10, 25);
         light.target.position.set(0, 0, 0);
         scene.add(light);
+
+        scene.background = new THREE.Color('red');
 
         //CREATE AND TRANSLATE MORE POLYGONS
         // const increase_vertex_count = (arr)=>{//I reduce the size of the vertex points and increase them along the x axis progressively
@@ -112,10 +114,10 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
                     polygons_states.current[i] = 'rotate';
                 }
                 if(polygons_states.current[i] === 'rotate_back'){
-                    rotation = 0.005;
+                    rotation = 0.001;
                 }
                 if(polygons_states.current[i] === 'rotate'){
-                    rotation = -0.005;
+                    rotation = -0.001;
                 }
                 //FRONT TO LEFT 
                 // dummy.rotation.y = dummy.rotation.y + rotation;  
@@ -132,10 +134,10 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
                     polygons_states.current[j] = 'rotate';
                 }
                 if(polygons_states.current[j] === 'rotate_back'){
-                    rotation = 0.005;
+                    rotation = 0.001;
                 }
                 if(polygons_states.current[j] === 'rotate'){
-                    rotation = -0.005;
+                    rotation = -0.001;
                 }
                 //FRONT TO LEFT 
                 dummy.rotation.y = dummy.rotation.y + rotation;  
@@ -180,7 +182,7 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         const material = new THREE.MeshPhongMaterial( { 
             color: 'blue', side: THREE.DoubleSide,
             specular: 0x050505,
-            shininess: 100
+            shininess: 500
         } );
         // const polygon = new THREE.Mesh( geometry, material );
 

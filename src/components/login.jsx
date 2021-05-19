@@ -5,8 +5,8 @@ import * as THREE from "three";
 
 let style = {
     backgroundLogin: {
-        minWidth: '100%',
-        maxWidth: '100%',
+        minWidth: '100vw',
+        maxWidth: '100vw',
         minHeight: '100vh',
         maxHeight: '100vh',
         display: 'grid',

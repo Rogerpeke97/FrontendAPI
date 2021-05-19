@@ -6,9 +6,8 @@ let style = {
     canvas:{
         minHeight: "250px",
         maxHeight: "250px", 
-        minWidth: "200px",
-        maxWidth: "100%",
-        border: "2px solid black",
+        minWidth: "350px",
+        maxWidth: "350px",
         zIndex: "2"
     }
 }

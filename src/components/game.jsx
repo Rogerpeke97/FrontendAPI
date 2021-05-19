@@ -79,7 +79,6 @@ const Game = () => {
     let scoreChecker = useRef(0);
     const [componentLoaded,
         setComponentLoaded] = useState(false);
-    let loadingScreenMessages = useRef(0);
     let percentage = useRef(0);
     let fadeScreen = useRef(0);
     let hitWait = useRef(false);
@@ -106,7 +105,6 @@ const Game = () => {
             controls
                 .target
                 .set(0, 0, 0);
-            const manager = new THREE.LoadingManager(); // WHEN MODELS ARE LOADED .onLoad will be called
             camera
                 .current
                 .position
@@ -117,7 +115,7 @@ const Game = () => {
                 .set(-0.0057 - 0.1, 0, 0);
             let clock = new THREE.Clock();
             //BACKGROUND LIGHT
-            const textureFlare = new THREE.TextureLoader(manager);
+            const textureFlare = new THREE.TextureLoader();
             const textureFlare0 = textureFlare.load( 'lensflare0.png' );
 			const textureFlare3 = textureFlare.load( 'lensflare3.png' );
             const addLight = (h, s, l, x, y, z)=> {
@@ -190,7 +188,7 @@ const Game = () => {
             //TREES
             trees.current = []
             let treeRotationX;
-            const treeLoader = new GLTFLoader(manager);
+            const treeLoader = new GLTFLoader();
             let trees_instanced_mesh;
             let geometry_merged = new THREE.BufferGeometry();
             let geometry_array = [];
@@ -216,7 +214,7 @@ const Game = () => {
                         let dummy_tree = new THREE.Object3D();
                         dummy_tree.scale.set(0.1,0.1,0.1)
                         newX = Math.floor(Math.random() * 3) - 1; //RANDOM NUMBER BETWEEN -7 AND 7 THIS CORRESPONDS TO THE x VALUE FROM THE CENTER OF THE SPHERE AND THE VALUE y IS THE RADIUS
-                        zRotationNewRadius = Math.sqrt(7 * 7 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
+                        zRotationNewRadius = Math.sqrt(6.9 * 6.9 - (newX * newX)); // NEW RADIUS IF LOOKED FROM THE SIDE, LOOKS AS IF THE RADIUS DECREASED
                         //The hypothenuse of zRotationNewRadius is the radius, newX is the adyacent and the new radius the opposite. Using trigonometry we get the new radius looking at the 
                         //sphere from the side
                         z_tree = Math.sin(angleSphereForTrees.current * (180 / Math.PI)) * zRotationNewRadius;
@@ -242,7 +240,7 @@ const Game = () => {
             })
             const dummy = new THREE.Object3D();
             //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
-            const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
+            const grassLoader = new GLTFLoader();                // eslint-disable-next-line no-loop-func
                 grassLoader.load('grassColor.glb', (grass) => {
                     grass
                     .scene
@@ -278,7 +276,7 @@ const Game = () => {
                 })
 
 
-            const loader = new GLTFLoader(manager)
+            const loader = new GLTFLoader()
             loader.load("knight.gltf", function (object) {
                 object.scene.position.x = 0;
                 object.scene.position.y = 7; // CIRCLE RADIUS
@@ -660,7 +658,7 @@ const Game = () => {
 
             //TRYING A SPHERE
             let floorTexture = new THREE
-                .TextureLoader(manager)
+                .TextureLoader()
                 .load('homescreenGrass.jpg', () => {
                     floorTexture.wrapS = THREE.RepeatWrapping;
                     floorTexture.wrapT = THREE.RepeatWrapping;
@@ -858,9 +856,8 @@ const Game = () => {
             animate()
             //CHECK IF MODELS ARE LOADED
             percentage.current.innerText = "0 %";
-        manager.onProgress = ()=>{
+        THREE.DefaultLoadingManager.onProgress = ()=>{
                 if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
-                    loadingScreenMessages.current.innerText = "Loading your experience...";
                     percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
                     progress_bar.current.style.width = (percentage.current.innerText).replace(' ', '');
                 }
@@ -869,7 +866,7 @@ const Game = () => {
                     progress_bar.current.style.width = percentage.current.innerText;
                 }
         }
-        manager.onLoad = ()=>{
+        THREE.DefaultLoadingManager.onLoad = ()=>{
             percentage.current.innerText = "100%";
             progress_bar.current.style.width = percentage.current.innerText;
             fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
@@ -979,7 +976,7 @@ const Game = () => {
                     <span>{" "}</span>
                     <span ref={percentage}></span>
                 </div>
-                <div className= "messages" ref={loadingScreenMessages}></div>
+                <div className= "messages">{"Loading your experience..."}</div>
                 <div style={style.loading_bar} >
                     <div style={style.progress_bar} ref={progress_bar}></div>
                 </div>

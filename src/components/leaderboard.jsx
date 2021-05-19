@@ -363,23 +363,6 @@ let Leaderboard = () => {
                         : ""}
                 </div>
             </div>
-            <div className= "loadingScreen" ref={fadeScreen} style={componentLoaded ? {display: "none"} : {display: "grid"}}>
-                <div>
-                    <span>L</span>
-                    <span>O</span>
-                    <span>A</span>
-                    <span>D</span>
-                    <span>I</span>
-                    <span>N</span>
-                    <span>G</span>
-                    <span>{" "}</span>
-                    <span ref={percentage}></span>
-                </div>
-                <div className= "messages" ref={loadingScreenMessages}></div>
-                <div style={style.loading_bar} >
-                    <div style={style.progress_bar} ref={progress_bar}></div>
-                </div>
-            </div>
         </div>
     )
 }

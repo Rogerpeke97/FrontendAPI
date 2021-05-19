@@ -20,8 +20,8 @@ let style = {
         top: "6.5rem",
         minHeight: '100%',
         maxHeight: '100%',
-        minWidth: '100%',
-        maxWidth: '100%'
+        minWidth: '100vw',
+        maxWidth: '100vw'
     },
     title: {
         display: 'flex',
@@ -34,9 +34,9 @@ let style = {
         display: 'grid',
         position: 'fixed',
         minHeight: '100vh',
-        minWidth: '1920px',
+        minWidth: '100vw',
         zIndex: "2",
-        maxWidth: '1920px',
+        maxWidth: '100vw',
     },
     explanationBox: {
         display: "grid",
@@ -117,11 +117,8 @@ const HomeScreen = () => {
     let progress_bar = useRef(0);
     let grass_geometry = useRef(0);
     useEffect(() => {
-        if(componentLoaded === false){
-        let scrollX = window.scrollX;
-        document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
         let height = canvas.current.clientHeight;
-        let width =  document.documentElement.clientWidth;
+        let width =  canvas.current.clientWidth;
         let manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
@@ -172,13 +169,11 @@ const HomeScreen = () => {
         let clock = new THREE.Clock();
         window.addEventListener('resize', () => {
             if (canvas.current !== null) {
-                width = document.documentElement.clientWidth
-                height = document.documentElement.clientHeight
+                width = canvas.current.clientWidth
+                height = canvas.current.clientHeight
                 renderer.setSize(width, height);
                 camera.current.aspect = width / height;
                 camera.current.updateProjectionMatrix();
-                scrollX = window.scrollX;
-                document.documentElement.scrollLeft = -scrollX; // On resize the window scrolls in x due to moving_divs
             }
         });
 
@@ -434,8 +429,8 @@ const HomeScreen = () => {
             fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
             fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
         }
-    }
-})
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
      //TRACK MOUSE MOVEMENT AND ROTATE camera
             let mouseMove = (e)=>{
                 let mousex = (e.clientX   - ( canvas.current.getBoundingClientRect().left / 2)) ;

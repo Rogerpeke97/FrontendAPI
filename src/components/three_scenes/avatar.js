@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import {useEffect, useRef, useState} from 'react'
+import {useEffect} from 'react'
 
 let style = {
     canvas:{

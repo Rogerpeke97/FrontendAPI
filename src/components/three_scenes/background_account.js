@@ -1,11 +1,16 @@
 import * as THREE from "three";
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {useEffect, useRef, useState} from 'react';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
 
 let style = {
     canvas:{
+        minHeight: "1080px",
+        maxHeight: "1080px", 
+        minWidth: "100vw",
+        maxWidth: "100vw",
+        position: "absolute",
+    },
+    canvas_after_load:{
         minHeight: "1080px",
         maxHeight: "1080px", 
         minWidth: "100vw",
@@ -17,6 +22,11 @@ let style = {
 
 const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
     const canvas = useRef(null);
+    const percentage = useRef(0);
+    const progress_bar = useRef(0);
+    const fadeScreen = useRef(0);
+    const [componentLoaded,
+        setComponentLoaded] = useState(false);
     useEffect(()=>{ 
         //Background
         const scene = new THREE.Scene();
@@ -265,10 +275,44 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
             render();
         }
         animate();
+        percentage.current.innerText = "0 %";
+        THREE.DefaultLoadingManager.onProgress = ()=>{
+                if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
+                percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
+                progress_bar.current.style.width = (percentage.current.innerText).replace(' ', '');
+                }
+                else{
+                    percentage.current.innerText = "100%";
+                    progress_bar.current.style.width = percentage.current.innerText;
+                }
+        }
+        THREE.DefaultLoadingManager.onLoad = ()=>{
+            percentage.current.innerText = "100%";
+            progress_bar.current.style.width = percentage.current.innerText;
+            fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
+            fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return(
-        <div style={style.canvas} ref={canvas}>
+        <div style={componentLoaded ? style.canvas_after_load : style.canvas} ref={canvas}>
+            <div className= "loadingScreen" ref={fadeScreen} style={componentLoaded ? {display: "none"} : {display: "grid"}}>
+                <div>
+                    <span>L</span>
+                    <span>O</span>
+                    <span>A</span>
+                    <span>D</span>
+                    <span>I</span>
+                    <span>N</span>
+                    <span>G</span>
+                    <span>{" "}</span>
+                    <span ref={percentage}></span>
+                </div>
+                <div className= "messages">{"Loading your experience..."}</div>
+                <div style={style.loading_bar} >
+                    <div style={style.progress_bar} ref={progress_bar}></div>
+                </div>
+            </div>
         </div>
     )
 }

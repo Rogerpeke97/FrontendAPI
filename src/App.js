@@ -6,20 +6,19 @@ import Game from './components/game';
 import Leaderboard from './components/leaderboard';
 
 import {
-  BrowserRouter as Router,
   Switch,
   Route,
   BrowserRouter
 } from "react-router-dom";
 import { PageContext } from './pageContext'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Account from './components/account';
 
 
 
 function App() {
 
-const [value, setValue] = useState({accountInfo: 0, logged: false, username: ""});
+const value = useState({accountInfo: 0, logged: false, username: ""});
 
   return (
     <BrowserRouter>
@@ -49,9 +48,10 @@ const [value, setValue] = useState({accountInfo: 0, logged: false, username: ""}
       </div>
     } />
     <Route exact path="/leaderboard" render= { props =>
-    <div> 
-    <Leaderboard/>
-    </div>
+      <div className="App">
+      <Navbar/>
+      <Leaderboard />
+      </div>
     } />
     </PageContext.Provider>
     </Switch>

@@ -17,14 +17,31 @@ let style = {
         maxWidth: "100vw",
         position: "absolute",
         zIndex: "0"
-    }
+    },
+    progress_bar: {
+        display: "grid",
+        transition: "all 0.5s ease-out",
+        width: "0%",
+        height: "30px",
+        background: "darkblue"
+    },
+    loading_bar : {
+        width: "300px",
+        marginTop: "2%",
+        zIndex: "2",
+        height: "30px",
+        background: "black",
+        boxShadow: "5px 5px 15px 5px black"
+    },
 }
 
-const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
+const BackgroundAccount = ({loading_screen})=>{
     const canvas = useRef(null);
     const percentage = useRef(0);
     const progress_bar = useRef(0);
     const fadeScreen = useRef(0);
+    const dummy_polygons = useRef([]);
+    const polygons_states = useRef([]);
     const [componentLoaded,
         setComponentLoaded] = useState(false);
     useEffect(()=>{ 
@@ -276,7 +293,8 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
         }
         animate();
         percentage.current.innerText = "0 %";
-        THREE.DefaultLoadingManager.onProgress = ()=>{
+        if(loading_screen.current === true){
+            THREE.DefaultLoadingManager.onProgress = ()=>{
                 if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
                 percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
                 progress_bar.current.style.width = (percentage.current.innerText).replace(' ', '');
@@ -285,12 +303,16 @@ const BackgroundAccount = ({dummy_polygons, polygons_states})=>{
                     percentage.current.innerText = "100%";
                     progress_bar.current.style.width = percentage.current.innerText;
                 }
+            }
+            THREE.DefaultLoadingManager.onLoad = ()=>{
+                percentage.current.innerText = "100%";
+                progress_bar.current.style.width = percentage.current.innerText;
+                fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
+                fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+            }
         }
-        THREE.DefaultLoadingManager.onLoad = ()=>{
-            percentage.current.innerText = "100%";
-            progress_bar.current.style.width = percentage.current.innerText;
-            fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
-            fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
+        if(loading_screen.current === false){
+            setComponentLoaded(true);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

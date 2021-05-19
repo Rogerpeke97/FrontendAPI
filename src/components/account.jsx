@@ -100,13 +100,12 @@ const Account = () => {
     const canvas = useRef(0);
     const scene = useRef(0);
     const color = useRef(0);
+    const loading_screen = useRef(true);
     const [colorSet, setColorSet] = useState("");
     const [userInfo, setUserInfo] = useState({user: "", joined_date: "", max_score: "", game_tag: ""});
     const [smartphoneView, setSmartphoneView] = useState(false);
-    const dummy_polygons = useRef([]);
-    const polygons_states = useRef([]);
     const checkIfYouAreLogged = () => { // CHECKS IF USER IS LOGGED IN
-        axios.post('http://localhost:8080/accountdetails', {
+        axios.post('https://xentaserver.herokuapp.com/accountdetails', {
             authorization: localStorage.getItem('user')
         }, {
         headers: {
@@ -143,7 +142,7 @@ const Account = () => {
             }
         })
         .catch(error => {
-        //window.location.assign('https://xentaserver.herokuapp.com/login')
+        window.location.assign('https://xentaserver.herokuapp.com/login')
         })
     };
     useEffect(()=>{
@@ -156,7 +155,7 @@ const Account = () => {
 
 
     const set_avatar_color = ()=>{
-        axios.post('http://localhost:8080/setcolor', { // UPLOADS SCORE
+        axios.post('https://xentaserver.herokuapp.com/setcolor', { // UPLOADS SCORE
         authorization: localStorage.getItem('user'),
         avatar: `${color.current}`
         }, {
@@ -271,7 +270,7 @@ const Account = () => {
 
     return (
         <div style={style.backgroundAccount}>
-            <BackgroundAccount dummy_polygons = {dummy_polygons} polygons_states = {polygons_states} />
+            <BackgroundAccount loading_screen = {loading_screen} />
             <div style={style.insideAccount}>
                 <div style={smartphoneView ? style.container_phone : style.container}>
                     {AvatarInfo()}

@@ -7,7 +7,6 @@ import {Lensflare, LensflareElement} from 'three/examples/jsm/objects/Lensflare.
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons'
 import { faWindowClose, faQuestionCircle, faMapMarked } from '@fortawesome/free-solid-svg-icons'
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {BufferGeometryUtils} from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 
@@ -119,7 +118,6 @@ const HomeScreen = () => {
     useEffect(() => {
         let height = canvas.current.clientHeight;
         let width =  canvas.current.clientWidth;
-        let manager = new THREE.LoadingManager();// WHEN MODELS ARE LOADED .onLoad will be called
         const scene = new THREE.Scene();
         //scene.add(helper) ONLY FOR DEBUGGING
 
@@ -141,7 +139,7 @@ const HomeScreen = () => {
 
         //
 
-        const textureFlare = new THREE.TextureLoader(manager);
+        const textureFlare = new THREE.TextureLoader();
         const textureFlare0 = textureFlare.load( 'lensflare0.png' );
         const textureFlare3 = textureFlare.load( 'lensflare3.png' );
 
@@ -182,7 +180,7 @@ const HomeScreen = () => {
         const particleDistance = 53;
         let particles = new THREE.BufferGeometry();
         const texture = new THREE
-            .TextureLoader(manager)
+            .TextureLoader()
             .load('leaftexture.png');
         const pMaterial = new THREE.PointsMaterial({
             color: 'green', size: 0.3, map: texture, alphaTest: 0.1, // removes black squares,
@@ -214,7 +212,7 @@ const HomeScreen = () => {
         })
         scene.add(particleSys)
         // CHARACTER ADDON FOR MAIN MENU
-        const loader = new GLTFLoader(manager)
+        const loader = new GLTFLoader()
         let action;
         loader.load("knight.gltf", function (object) {
             object.scene.position.x = 0;
@@ -229,7 +227,7 @@ const HomeScreen = () => {
         // setTimeout(()=>mixer.clipAction(obj.animations[1]).play(), 8000)// WORKS
         // TRYING A SPHERE
         const floorTexture = new THREE
-            .TextureLoader(manager)
+            .TextureLoader()
             .load('homescreenGrass.jpg', () => {
                 floorTexture.wrapS = THREE.RepeatWrapping;
                 floorTexture.wrapT = THREE.RepeatWrapping;
@@ -253,12 +251,12 @@ const HomeScreen = () => {
         sphere.position.set(0, -9, -2);
         scene.add(sphere);
         const textu = new THREE
-            .TextureLoader(manager)
+            .TextureLoader()
             .load("/textures/skyBackgroundCropped.jpeg");
         textu.minFilter = THREE.LinearFilter;
         scene.background = textu;
         //TREE
-        const treeLoader = new GLTFLoader(manager);
+        const treeLoader = new GLTFLoader();
         let trees_instanced_mesh;
         let treeRotationX, treePositionY;
         let newX = -5;
@@ -316,7 +314,7 @@ const HomeScreen = () => {
         const dummy = new THREE.Object3D();
         let zRotationNewRadius,treeRotationZ,grassRotationX, z, grassPositionY;
         //GRASS USED BLENDER TO CREATE LITTLE BLOCKS OF GRASS AND WIND ANIMATION
-        const grassLoader = new GLTFLoader(manager);                // eslint-disable-next-line no-loop-func
+        const grassLoader = new GLTFLoader();                // eslint-disable-next-line no-loop-func
             grassLoader.load('grassColor.glb', (grass) => {
                 grass.scene.traverse((child)=>{
                     if (child.isMesh) {
@@ -412,7 +410,7 @@ const HomeScreen = () => {
         animate()
         //CHECK IF MODELS ARE LOADED
         percentage.current.innerText = "0 %";
-        manager.onProgress = ()=>{
+        THREE.DefaultLoadingManager.onProgress = ()=>{
                 if(parseInt(percentage.current.innerText.slice(0, -2)) < 100){
                 loadingScreenMessages.current.innerText = "Loading your experience...";
                 percentage.current.innerText = parseInt(percentage.current.innerText.slice(0, -2)) + 1 + " %";
@@ -423,7 +421,7 @@ const HomeScreen = () => {
                     progress_bar.current.style.width = percentage.current.innerText;
                 }
         }
-        manager.onLoad = ()=>{
+        THREE.DefaultLoadingManager.onLoad = ()=>{
             percentage.current.innerText = "100%";
             progress_bar.current.style.width = percentage.current.innerText;
             fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";

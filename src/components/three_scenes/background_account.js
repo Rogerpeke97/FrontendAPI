@@ -309,7 +309,7 @@ const BackgroundAccount = ({loading_screen})=>{
                 progress_bar.current.style.width = percentage.current.innerText;
                 fadeScreen.current.style.animation = "loadingDone 1s normal forwards ease-out";
                 fadeScreen.current.onanimationend = ()=>setComponentLoaded(true);
-            }
+            }//comment
         }
         if(loading_screen.current === false){
             setComponentLoaded(true);

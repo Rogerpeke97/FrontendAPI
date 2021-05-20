@@ -323,6 +323,14 @@ const Navbar = ()=>{
                  <div style={hoverLogin === 1 ? style.hoverLogin : {display: "none", visibility: "hidden"}}
                   onMouseEnter={()=>setHoverLogin(1)} onMouseLeave={()=>setHoverLogin(0)}>
                   <Link to={logged ? "/account" : "/login"}
+                  onClick={()=>{
+                      if(logged){
+                        window.location.assign("/account")
+                      }
+                      else{
+                        window.location.assign("/login")
+                      }
+                  }}
                    style={style.dropdown} onMouseEnter={(e)=>{
                        e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
                        e.currentTarget.style.color = "white";
@@ -335,6 +343,14 @@ const Navbar = ()=>{
                   <div style={{paddingLeft: "2%"}}>Account</div>
                   </Link>
                   <Link to={logged ? "/leaderboard" : "/login"} style={style.dropdown}
+                        onClick={()=>{
+                            if(logged){
+                                window.location.assign("/leaderboard")
+                            }
+                            else{
+                                window.location.assign("/login")
+                            }
+                        }}
                    onMouseEnter={(e)=>{
                        e.currentTarget.style.backgroundColor = "rgb(50, 30, 50)";
                        e.currentTarget.style.color = "white";

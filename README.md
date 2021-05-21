@@ -1,50 +1,34 @@
-<h1 style="text-decoration: underline;">Frontend for Xenta's game website <h1>
-
-<a href="https://xenta.netlify.app/" rel="noopener noreferrer" target="_blank"
-style="justify-content= center; align-content: center; cursor: pointer;">
-    Website
-</a>
-</br>
-</br>
-<a href="https://github.com/Rogerpeke97/APISpring" rel="noopener noreferrer" target="_blank"
-style="justify-content= center; align-content: center; cursor: pointer;">
-    Backend
-</a>
-
-### `Technologies used`:
-
-<div style="display: flex; align-items: center; justify-content: right;">
-        <h4 style="flex: 0.25; cursor: default">React.js:</h4>
-        <a href="https://reactjs.org/" rel="noopener noreferrer" target="_blank"
-        width= 70px height= 50px cursor= "pointer"">
-            <img src="public/Reactjslogo.png" height= "50px" width= "70px">
-        </a>
-</div>
-
-<br />
+# Frontend for Xenta's game website
+![](public/xenta_home.png)
 
 
-<div style="display: flex; align-items: center; justify-content: right;">
-        <h4 style="flex: 0.25; cursor: default">Three.js:</h4>
-        <a href="https://threejs.org/" rel="noopener noreferrer" target="_blank"
-        height= "50px" width= "50px" cursor= "pointer"">
-            <img src="public/threejslogo.png" height= "50px" width= "50px"></img>
-        </a>
-</div>
+Frontend built using React and Three.js for the game Xenta.
 
-<br />
+[Website](https://xenta.netlify.app/) || [Backend](https://github.com/Rogerpeke97/APISpring)
 
-### `Run the website`
-After cloning the repository type `npm i` in the console to install the dependencies, after that use `npm run start` to run the website in your localhost.
+## Description
 
-### `Game screenshots`
-<img src="public/xenta_home.png">
+This website is basically an "infinite" (If you don't die that is) game where you are given the sensation that you are moving forward but in reality the character is just orbiting around the surface of the sphere which was achieved using Trigonometry which was also applied to the movement of the trees and grass as time passes.
+You have a score, which is saved if your performance was better than your previous best score and a set amount of lives that decrease as you hit the trees.
 
-</br>
+## Getting Started
 
-<img src="public/gameGif.gif">
+### Dependencies
 
-</br>
+* react-router
+* three.js
+* axios
+* @fortawesome/react-fontawesome
 
-<img src="public/demo.gif">
+### Installing
+
+* Clone the repo https://github.com/Rogerpeke97/FrontendAPI.git
+* Run `npm i` to install the dependencies
+
+### Executing program
+
+* Run `npm run start` to start the server in your localhost after installing all the dependencies
+## Authors
+
+[@Ignacio](https://github.com/Rogerpeke97)
 

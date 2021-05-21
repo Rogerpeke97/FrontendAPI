@@ -17,8 +17,6 @@ let style = {
         backgroundColor: 'transparent',
         position: 'relative',
         top: "6.5rem",
-        minHeight: '100%',
-        maxHeight: '100%',
         minWidth: '100vw',
         maxWidth: '100vw'
     },
@@ -43,7 +41,8 @@ let style = {
         width: "70%",
         opacity: "0.8",
         zIndex: "2",
-        minHeight: "100vh",
+        minHeight: "2350px",
+        maxHeight: "2350px",
         left: "15%",
         position: "relative",
         boxShadow: "0 10px 20px gray, 0 6px 6px gray",
@@ -58,19 +57,19 @@ let style = {
         justifyContent: "center",
         height: '10rem',
         position: "relative",
-        width: "100%",
+        minWidth: "100vw",
+        maxWidth: "100vw"
     },
     playButton: {
         textDecoration: "none",
         color: "white",
         background: "black",
         fontWeight: "bold",
-        width: "20%",
+        width: "30%",
+        bottom: "1%",
         height: "4rem",
         zIndex: "2",
-        marginBottom: "5%",
-        marginTop: "5%",
-        left:"40%",
+        left:"35%",
         boxShadow: "0px 7px 11px 0px rgba(50, 50, 50, 0.75)",
         position: "relative",
         display: "flex",
@@ -648,7 +647,8 @@ const HomeScreen = () => {
                         </div>
                     </div>
                 </div>
-                <div style={style.playButton}>
+            </div>
+            <div style={style.playButton}>
                         <Link
                             to="/game"
                             onClick={()=>window.location.assign("/game")}
@@ -668,7 +668,7 @@ const HomeScreen = () => {
                             alignItems: "center",
                             transition: "all 0.5s ease-out"
                         }}>Play</Link>
-                </div>
+            </div>
             <div style={style.footer}>
                 <div style={{flex: "1", display: "grid", alignItems: "center", margin: "2%"}}>
                     <div>Ignacio Martin Diaz</div>     
@@ -695,7 +695,6 @@ const HomeScreen = () => {
                     <div>LinkedIn</div> 
                     </div>
                 </div>
-            </div>
             </div>
             <div
                 className="loadingScreen"

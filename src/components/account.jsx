@@ -84,9 +84,13 @@ let style = {
     account_data: {
         display: "grid", 
         width: "100%", 
-        textDecoration: "underline",
         height: "100%", 
         gridTemplateRows: "50% 50%"
+    },
+    account_data_column: {
+        display: "grid",
+        textDecoration: "underline",
+        alignContent: "center",
     },
     account_data_row: {
         display: "grid",
@@ -194,7 +198,7 @@ const Account = () => {
         return(
             <div style={smartphoneView ? style.account_data_container_phone : style.account_data_container}>
                 <div style={style.account_data}>
-                    <div style={style.account_data_row}>
+                    <div style={style.account_data_column}>
                         Account:
                     </div>
                     <div style={style.account_data_row}>
@@ -202,7 +206,7 @@ const Account = () => {
                     </div>
                 </div>
                 <div style={style.account_data}>
-                    <div style={style.account_data_row}>
+                    <div style={style.account_data_column}>
                         Username:
                     </div>
                     <div style={style.account_data_row}>
@@ -210,7 +214,7 @@ const Account = () => {
                     </div>
                 </div>
                 <div style={style.account_data}>
-                <div style={style.account_data_row}>
+                <div style={style.account_data_column}>
                         Join date:
                     </div>
                     <div style={style.account_data_row}>
@@ -218,7 +222,7 @@ const Account = () => {
                     </div>
                 </div>
                 <div style={style.account_data}>
-                <div style={style.account_data_row}>
+                <div style={style.account_data_column}>
                     Max score:
                     </div>
                     <div style={style.account_data_row}>

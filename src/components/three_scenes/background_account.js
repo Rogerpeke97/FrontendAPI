@@ -56,20 +56,22 @@ const BackgroundAccount = ({loading_screen})=>{
         const renderer = new THREE.WebGLRenderer({antialias: true});
         camera
             .position
-            .set(0, 0.25, 3.4);
+            .set(0, 0.25, 2.8);
 
         // let controls = new OrbitControls(camera, renderer.domElement);
         // controls
         //     .target
         //     .set(0, 0, 0);
-        const color_scene = 'darkgreen';
-        const intensity = 0.7;
+        const color_scene = 'white';
+        const intensity = 0.2;
         const light = new THREE.DirectionalLight(color_scene, intensity);
-        light.position.set(-10, 10, 25);
+        light.position.set(-10, 10, 45);
         light.target.position.set(0, 0, 0);
         scene.add(light);
+        const hemiLight = new THREE.HemisphereLight( 0xddeeff, 0x0f0e0d, 2 );
+        scene.add( hemiLight );
 
-        scene.background = new THREE.Color('red');
+        // scene.background = new THREE.Color('white');
 
         //CREATE AND TRANSLATE MORE POLYGONS
         // const increase_vertex_count = (arr)=>{//I reduce the size of the vertex points and increase them along the x axis progressively
@@ -200,15 +202,27 @@ const BackgroundAccount = ({loading_screen})=>{
         const indices = [
             0, 1, 2
         ];
+        const polygons_texture = new THREE
+        .TextureLoader()
+        .load('./textures/polygons_texture.jpg', () => {
 
+            polygons_texture.anisotropy = 4;
+            polygons_texture.encoding = THREE.sRGBEncoding;
+        });
+        
+        // textureLoader.wrapS = THREE.RepeatWrapping;
+        // textureLoader.wrapT = THREE.RepeatWrapping;
+        // textureLoader.anisotropy = 4;
+        // textureLoader.repeat.set( 10, 24 );
+        // textureLoader.encoding = THREE.sRGBEncoding;
 
         geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
         geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
         geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
         geometry.setIndex(indices);
         const material = new THREE.MeshPhongMaterial( { 
-            color: 'blue', side: THREE.DoubleSide,
-            specular: 0x050505,
+            color: 'brown', side: THREE.DoubleSide,
+            specular: 0x050505, map: polygons_texture,
             shininess: 500
         } );
         // const polygon = new THREE.Mesh( geometry, material );
@@ -248,10 +262,10 @@ const BackgroundAccount = ({loading_screen})=>{
         geometry_polygon_2.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
         geometry_polygon_2.setIndex(indices);
         const material_2 = new THREE.MeshPhongMaterial( {
-             color: 'lightblue', side: THREE.DoubleSide,
-             specular: 0x050505,
-             shininess: 500
-            } );
+            color: 'lightblue', side: THREE.DoubleSide,
+            specular: 0x050505, map: polygons_texture,
+            shininess: 500
+           } );
         // const polygon_2 = new THREE.Mesh( geometry_polygon_2, material_2 );
 
         // scene.add(polygon_2);

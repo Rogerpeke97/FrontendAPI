@@ -19,9 +19,21 @@ let style = {
         top: "50%",
         left: "50%",
         color: "white",
-        overflow: "scroll",
-        overflowX: "hidden",
+        overflow: "hidden",
         marginLeft: "-300px",
+        background: "black",
+        opacity: "0.8",
+        marginTop: "-300px",
+        boxShadow: "7px 7px 10px 0px rgba(50, 50, 50, 0.75)"
+    },
+    leaderboard_phone:{
+        width: "95%",
+        height: "600px",
+        position: "relative",
+        top: "50%",
+        left: "2.5%",
+        color: "white",
+        overflow: "hidden",
         background: "black",
         opacity: "0.8",
         marginTop: "-300px",
@@ -38,6 +50,14 @@ let style = {
         height: "50px",
         textAlign: "center"
     },
+    column: {
+        flex: "1",
+        border: "1px solid gray",
+        display: "grid",
+        alignItems: "center",
+        transition: "all 0.5s ease-out",
+        cursor: "default"
+    }
 }
 
 const Leaderboard = () => {
@@ -46,6 +66,7 @@ const Leaderboard = () => {
     const arrayData = useRef(0);
     const leaderboard = useRef(0);
     const loading_screen = useRef(false);
+    const [smartphoneView, setSmartphoneView] = useState(false);
     useEffect(() => {
         axios.post('https://xentaserver.herokuapp.com/leaderboard', { // GETS SCORE
             authorization: `Bearer ${localStorage.getItem('user')}`
@@ -63,8 +84,22 @@ const Leaderboard = () => {
             addRows();
         }).catch(error => {
         })
+        phoneViewCheck(window.matchMedia("(max-width: 1300px)"));
+        window.matchMedia("(max-width: 1300px)").addEventListener('change', phoneViewCheck);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
+
+
+    //media queries
+    const phoneViewCheck = (e)=>{
+        if(e.matches === true){
+            setSmartphoneView(true);
+        }
+        else{
+            setSmartphoneView(false);
+        }
+    }
+    
 
     const addRows = () => {
         let newArr = [];
@@ -163,22 +198,13 @@ const Leaderboard = () => {
     return (
         <div style={style.container}>
             <BackgroundAccount loading_screen = {loading_screen} />
-            <div ref={leaderboard} style={style.leaderboard}>
+            <div ref={leaderboard} style={smartphoneView ? style.leaderboard_phone : style.leaderboard}>
                 <div style={style.row}>
                     <div
-                        style={{
-                        flex: "1",
-                        border: "1px solid gray",
-                        display: "grid",
-                        alignItems: "center", transition: "all 0.5s ease-out"
-                    }}>Nº</div>
+                        style={style.column}
+                    >Nº</div>
                     <div
-                        style={{
-                        flex: "1",
-                        border: "1px solid gray",
-                        display: "grid",
-                        alignItems: "center", transition: "all 0.5s ease-out"
-                    }}
+                        style={style.column}
                         onMouseEnter={(e) => {
                         e.currentTarget.style.boxShadow = "inset 200px 0px 0px #2F3B47"
                     }}
@@ -186,12 +212,7 @@ const Leaderboard = () => {
                         e.currentTarget.style.boxShadow = ""
                     }}>User name</div>
                     <div
-                        style={{
-                        flex: "1",
-                        border: "1px solid gray",
-                        display: "grid",
-                        alignItems: "center", transition: "all 0.5s ease-out"
-                    }}
+                        style={style.column}
                         onMouseEnter={(e) => {
                         e.currentTarget.style.boxShadow = "inset 200px 0px 0px #2F3B47"
                     }}

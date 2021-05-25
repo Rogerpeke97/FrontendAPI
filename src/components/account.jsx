@@ -33,13 +33,12 @@ let style = {
     },
     color_set_container: {
         display: "grid", 
-        padding: "5px", 
         width: "350px",
         height: "232px"
     },
     color: { 
         height: "100%",
-        flex: "1",
+        flex: "30%",
         boxShadow: "3px 3px 16px 0px rgba(50, 50, 50, 0.75)",
         transition: "0.5s ease-out",
         cursor: "pointer", 
@@ -67,15 +66,25 @@ let style = {
         textShadow: "2px 0px 3px #000000",
         flex: "1", 
         fontSize: "1.5rem",
-        height: "100px",
+        height: "200px",
         alignItems: "center", 
-        background: "",
         textAlign: "center", 
+        fontWeight: "bold", 
+    },
+    account_data_container_phone: {
+        display: "grid", 
+        textShadow: "2px 0px 3px #000000",
+        gridTemplateRows: "20% 20% 20% 20% 20%",
+        fontSize: "1.5rem",
+        height: "500px",
+        alignItems: "center", 
+        textAlign: "left", 
         fontWeight: "bold", 
     },
     account_data: {
         display: "grid", 
         width: "100%", 
+        textDecoration: "underline",
         height: "100%", 
         gridTemplateRows: "50% 50%"
     },
@@ -183,10 +192,10 @@ const Account = () => {
 
     const DataContainer = ()=>{
         return(
-            <div style={style.account_data_container}>
+            <div style={smartphoneView ? style.account_data_container_phone : style.account_data_container}>
                 <div style={style.account_data}>
                     <div style={style.account_data_row}>
-                        Account
+                        Account:
                     </div>
                     <div style={style.account_data_row}>
                     {userInfo.user}
@@ -194,7 +203,7 @@ const Account = () => {
                 </div>
                 <div style={style.account_data}>
                     <div style={style.account_data_row}>
-                        Username
+                        Username:
                     </div>
                     <div style={style.account_data_row}>
                     {userInfo.game_tag}
@@ -202,7 +211,7 @@ const Account = () => {
                 </div>
                 <div style={style.account_data}>
                 <div style={style.account_data_row}>
-                        Join date
+                        Join date:
                     </div>
                     <div style={style.account_data_row}>
                     {userInfo.joined_date}
@@ -210,7 +219,7 @@ const Account = () => {
                 </div>
                 <div style={style.account_data}>
                 <div style={style.account_data_row}>
-                    Max score
+                    Max score:
                     </div>
                     <div style={style.account_data_row}>
                     {userInfo.max_score}

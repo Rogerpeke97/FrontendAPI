@@ -8,7 +8,7 @@ Frontend built using React and Three.js for the game Xenta.
 
 ## Description
 
-This website is basically an "infinite" (If you don't die that is) game where you are given the sensation that you are moving forward but in reality the character is just orbiting around the surface of the sphere which was achieved using Trigonometry which was also applied to the movement of the trees and grass as time passes.
+This website is basically an "infinite" (If you don't die that is) game where you are given the sensation that you are moving forward but in reality the character is just orbiting around the surface of the sphere. This was achieved using Trigonometry which was also applied to the movement of the trees and grass as time passes.
 You have a score, which is saved if your performance was better than your previous best score and a set amount of lives that decrease as you hit the trees.
 This website uses JWT to authenticate users with the Spring Boot Backend.
 
